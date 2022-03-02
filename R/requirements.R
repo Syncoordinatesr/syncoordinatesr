@@ -1,11 +1,3 @@
 require("ars")
-require("fields")
-require("mvtnorm")
-require("ggplot2")
 require('spdep')
-require('spBayes')
-require('class')
-require('HDInterval')
-require('coda')
-require("HI")
-require("MfUSampler")
+

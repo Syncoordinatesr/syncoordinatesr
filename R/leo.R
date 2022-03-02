@@ -1,20 +1,3 @@
-#Packages required: "spdep", "ars"
-require(ars)
-require(spdep)
-
-# Função para mu
-#source("functions/mu.R")
-
-# Função para theta_i
-#source("functions/theta_i.R")
-
-# Função para epsilon_i
-#source("functions/epsilon_i.R")
-
-# Função para vec2mat
-#source("functions/vec2mat.R")
-
-
 #' @description
 #'Function "prepara_dados" has the goal of receiving the database of the user to generate important variables
 #'that will be used in the mcmc and in the end to generate the synthetic coordinates. In the input, the function
