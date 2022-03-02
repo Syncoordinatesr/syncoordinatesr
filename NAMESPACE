@@ -1,2 +1,4 @@
 export(funcao_m1_mcmc)
 export(funcao_m1_CS)
+import(ars)
+import(spdep)
