@@ -1,7 +1,4 @@
-#' @description
-#'Function "prepara_dados" has the goal of receiving the database of the user to generate important variables
-#'that will be used in the mcmc and in the end to generate the synthetic coordinates. In the input, the function
-#'receives the parameters: 'dataset', 'coord', 'grid'.
+#' @description  Function '"'prepara_dados' has the goal of receiving the database of the user to generate important variables that will be used in the mcmc and in the end to generate the synthetic coordinates. In the input, the function receives the parameters: 'dataset', 'coord', 'grid'.
 #' @parameters
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
@@ -120,19 +117,17 @@ prepara_dados <- function(dataset, coord, grid = 10){
 
 ############################################################################
 
-#' @description
-#'Function "funcao_m1_mcmc" receives our database, the quantities of simulations, how many simulations will be
-#'burned and uses variables that we got in the function "prepara_dados" to do the mcmc. By the end of this
-#'function we get the parameter "lambda" that will be required when creating the synthetic coordinates.
+#' @description  Function "funcao_m1_mcmc" receives our database, the quantities of simulations, how many simulations will be burned and uses variables that we got in the function "prepara_dados" to do the mcmc. By the end of this function we get the parameter "lambda" that will be required when creating the synthetic coordinates.
 #' @parameters
 #' @param  dataset   A data frame with all the information except the coordinates
-#' @param  S   Quantites of simulations that will be made. With a default result of (S = 5000)
-#' @param  burn    The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)
+#' @param  S   Quantities of simulations that will be made. With a default result of (S = 5000)
+#' @param  burn   The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)
+#' @param  return_paramenters  Option to return the result of the parameters
 #' @examples
-#'   funcao_m1_mcmc(dataset = my_database, S = 2500, burn = 500)
+#'   funcao_m1_mcmc(dataset = my_database, S = 2500, burn = 500, return_parameters = TRUE)
 #' @export
 funcao_m1_mcmc <- function(dataset, coord, grid = 10,
-                           S = 5000, burn = 1000){
+                           S = 5000, burn = 1000, return_parameters = FALSE){
 
   saida = prepara_dados(dataset, coord, grid)
 
@@ -302,15 +297,20 @@ funcao_m1_mcmc <- function(dataset, coord, grid = 10,
 
   }
 
-  return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda))
+  if (return_parameters = FALSE){
+    return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda))
+  }
+  else{
+    return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda,
+                alfa=alfa, mu=mu, theta=theta, tau.theta=tau.theta, phi=phi, tau.phi=tau.phi, epsilon=epsilon, tau.e=tau.e))
+  }
+
 
 }  ## END OF FUNCTION 'funcao_m1_mcmc'
 
 ############################################################################
 
-#' @description
-#'Function "funcao_m1_CS" receives the database, the parameter lambda and the number of synthetic data the
-#'user desires. And the function returns the synthetic databases containing the synthetic coordinates.
+#' @description  Function "funcao_m1_CS" receives the database, the parameter lambda and the number of synthetic data the user desires. And the function returns the synthetic databases containing the synthetic coordinates.
 #' @parameters
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   cooord    An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
