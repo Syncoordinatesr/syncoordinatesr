@@ -1,0 +1,15 @@
+Package: loegalhardo-0.0
+Type: Package
+Title: "Synthetic coordinates generator for data frames that contain location"
+Version: 0.0
+Date: 2022-03-02
+Authors@R: c(person("Thaís", "Paiva", email = "thaispaiva@est.ufmg.br", role = "aut"),
+             person("Letícia", "Silva Nunes", email = , role = "aut"),
+             person("Leonardo", "de Mattos Galhardo", email = "leomgal20@hotmail.com", role = c("cre","aut")))
+
+  Description: Implementation of the methodology described in \url{http://est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}.
+License:
+Encoding: UTF-8
+Imports:
+ars
+spdep
