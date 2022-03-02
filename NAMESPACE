@@ -1,0 +1,2 @@
+export(funcao_m1_mcmc)
+export(funcao_m1_CS)
