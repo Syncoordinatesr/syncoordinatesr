@@ -10,5 +10,5 @@ Description: Implementation of the methodology described in \url{http://est.ufmg
 License: None
 Encoding: UTF-8
 Imports:
-  ars (>=0.6)
-  spdep (>=1.2-1)
+  ars (>= 0.6),
+  spdep (>= 1.2-1)
