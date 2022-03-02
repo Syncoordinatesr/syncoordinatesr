@@ -1,4 +1,4 @@
-Package: leo_galhardo
+Package: syncoordinatesr
 Type: Package
 Title: Synthetic coordinates generator for data frames that contain location
 Version: 0.0

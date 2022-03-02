@@ -193,7 +193,7 @@ funcao_m1_mcmc <- function(dataset, coord, grid = 10,
 
   }
 
-  if (return_parameters = FALSE){
+  if (return_parameters == FALSE){
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda))
   }
   else{
