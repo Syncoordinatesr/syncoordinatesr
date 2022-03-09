@@ -1,4 +1,4 @@
-export(syn_data)
+export(syn_mcmc)
 export(syncoordinates)
 import(ars)
 import(spdep)

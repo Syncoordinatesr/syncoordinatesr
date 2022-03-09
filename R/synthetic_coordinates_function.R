@@ -25,7 +25,7 @@
 
 syncoordinates <- function(dataset, coord, grid = 10, list_mcmc, n.syn = 5){
 
-  saida = prepara_dados(dataset, coord, grid)
+  saida = prepare_data(dataset, coord, grid)
 
   int.syn = floor((list_mcmc$S-list_mcmc$burn-1)/(n.syn-1))
   list.syn = seq(list_mcmc$burn+1,list_mcmc$burn+(n.syn-1)*int.syn+1,by=int.syn)
