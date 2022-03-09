@@ -1,9 +1,9 @@
 #' @title  Generation of synthetic coordinates
 #'
-#' @name  funcao_m1_CS
+#' @name  syncoordinates
 #'
 #' @description  A function that generates synthetic coordinates.
-#' Function \code{funcao_m1_CS} receives the database, the parameter lambda and the number of synthetic data the user desires.
+#' Function \code{syncoordinates} receives the database, the parameter lambda and the number of synthetic data the user desires.
 #' And the function returns the synthetic databases containing the synthetic coordinates.
 #'
 #' @param  dataset   A data frame with all the information except the coordinates
@@ -19,11 +19,11 @@
 #' Disponível em: \url:{http//est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}. Acesso em: 2 mar. 2022.
 #'
 #' @examples
-#'   funcao_m1_CS(dataset = my_database, lambda = lambda_from_mcmc, n.syn = 3)
+#'   syncoordinates(dataset = my_database, lambda = lambda_from_mcmc, n.syn = 3)
 #'
 #' @export
 
-funcao_m1_CS <- function(dataset, coord, grid = 10, list_mcmc, n.syn = 5){
+syncoordinates <- function(dataset, coord, grid = 10, list_mcmc, n.syn = 5){
 
   saida = prepara_dados(dataset, coord, grid)
 

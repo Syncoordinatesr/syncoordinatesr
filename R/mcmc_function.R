@@ -1,9 +1,9 @@
 #' @title Markov Chain Monte Carlo function
 #'
-#' @name  funcao_m1_mcmc
+#' @name  syn_mcmc
 #'
 #' @description  A MCMC function that will be useful to obtain the synthetic coordinates.
-#' Function "funcao_m1_mcmc" receives our database uses variables that we got in the function \code{link:prepara_dados} to do the mcmc.
+#' Function "syn_mcmc" receives our database uses variables that we got in the function \code{link:prepare_data} to do the mcmc.
 #' By the end of this function we get the parameter \code{lambda} that will be required when creating the synthetic coordinates.
 #'
 #' @param  dataset   A data frame with all the information except the coordinates
@@ -18,14 +18,14 @@
 #' Disponível em: \url:{http//est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}. Acesso em: 2 mar. 2022.
 #'
 #' @examples
-#'   funcao_m1_mcmc(dataset = my_database, S = 2500, burn = 500, return_parameters = TRUE)
+#'   syn_mcmc(dataset = my_database, S = 2500, burn = 500, return_parameters = TRUE)
 #'
 #' @export
 
-funcao_m1_mcmc <- function(dataset, coord, grid = 10,
+syn_mcmc <- function(dataset, coord, grid = 10,
                            S = 5000, burn = 1000, return_parameters = FALSE){
 
-  saida = prepara_dados(dataset, coord, grid)
+  saida = prepare_data(dataset, coord, grid)
 
   # assigning the elements of the output to new objects
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))

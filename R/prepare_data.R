@@ -1,7 +1,7 @@
-#' @name  prepara_dados
+#' @name  prepare_data
 #'
 #' @description  An auxiliary function to generate useful objects for the order functions in this package
-#' Function \code{prepara_dados} has the goal of receiving the database of the user to generate important variables that will be used in the MCMC.
+#' Function \code{prepare_data} has the goal of receiving the database of the user to generate important variables that will be used in the MCMC.
 #' and in the end to generate the synthetic coordinates.
 #' In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid}.
 #'
@@ -16,9 +16,9 @@
 #' Disponível em: \url:{http//est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}. Acesso em: 2 mar. 2022.
 #'
 #' @examples
-#'   prepara_dados(dataset = my_database, coord = coordinates_of_the_database, grid = 20)
+#'   prepare_data(dataset = my_database, coord = coordinates_of_the_database, grid = 20)
 
-prepara_dados <- function(dataset, coord, grid = 10){
+prepare_data <- function(dataset, coord, grid = 10){
 
   # Fazer um tratamento melhor dos erros
   if (!is.data.frame(dataset))

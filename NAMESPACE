@@ -1,4 +1,4 @@
-export(funcao_m1_mcmc)
-export(funcao_m1_CS)
+export(syn_data)
+export(syncoordinates)
 import(ars)
 import(spdep)
