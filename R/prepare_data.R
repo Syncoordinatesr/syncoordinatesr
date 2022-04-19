@@ -1,3 +1,5 @@
+#' @title  A function that generates useful objects for the package from the database
+#'
 #' @name  prepare_data
 #'
 #' @description  An auxiliary function to generate useful objects for the order functions in this package

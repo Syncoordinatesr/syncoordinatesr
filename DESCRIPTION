@@ -12,3 +12,4 @@ Encoding: UTF-8
 Imports:
   ars (>= 0.6),
   spdep (>= 1.2-1)
+RoxygenNote: 7.1.2
