@@ -9,7 +9,7 @@ The package contains functions able to generate synthetic coordinates using the 
 
 The package, in this moment, can't be found on CRAN and your installation has to
 be done via github. To do this you must have already installed the package **devtools**
-so you can use the function *install_github*
+so you can use the function *install_github* as exhibited below:
 
 ```R
 devtools::install_github("leogalhardo/syncoordinatesr")
