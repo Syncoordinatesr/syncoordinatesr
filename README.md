@@ -1,6 +1,6 @@
-# 'Syncoordinatesr' package
+# Syncoordinatesr package
 
-The 'syncoordinatesr' is a package useful to generate synthetic coordinates for your database. 
+The *syncoordinatesr* is a package useful to generate synthetic coordinates for your database. 
 Inspired by the research article of Thaís Paiva: <https://onlinelibrary.wiley.com/doi/10.1002/sim.6078>.
 And the masters dissertation of Letícia Nunes: <http://est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf>.
 The package contains functions able to generate synthetic coordinates using the method explained in both articles.
