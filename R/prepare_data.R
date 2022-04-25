@@ -19,6 +19,8 @@
 #'
 #' @examples
 #'   prepare_data(dataset = my_database, coord = coordinates_of_the_database, grid = 20)
+#'
+#' @import spdep
 
 prepare_data <- function(dataset, coord, grid = 10){
 

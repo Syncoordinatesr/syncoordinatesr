@@ -20,6 +20,8 @@
 #' @examples
 #'   syn_mcmc(dataset = my_database, S = 2500, burn = 500, return_parameters = TRUE)
 #'
+#' @import ars
+#'
 #' @export
 
 syn_mcmc <- function(dataset, coord, grid = 10,
