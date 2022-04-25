@@ -1,3 +1,0 @@
-require("ars")
-require('spdep')
-
