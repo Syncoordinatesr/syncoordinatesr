@@ -1,8 +1,3 @@
-<!-- badges -->
-[![CRAN\ Status\ Badge]
-[![Downloads]
-<!-- end badges -->
-
 # 'Syncoordinatesr' package
 
 The *syncoordinatesr* is a package useful to generate synthetic coordinates for your database. 
