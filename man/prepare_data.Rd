@@ -24,6 +24,7 @@ In the input, the function receives the parameters: \code{dataset}, \code{coord}
 }
 \examples{
   prepare_data(dataset = my_database, coord = coordinates_of_the_database, grid = 20)
+
 }
 \references{
 NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
