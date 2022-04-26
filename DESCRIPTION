@@ -3,9 +3,13 @@ Type: Package
 Title: Synthetic coordinates generator for data frames that contain location
 Version: 0.0
 Date: 2022-03-02
-Authors@R: c(person("Thaís", "Paiva", role = "aut"),
-             person("Letícia", "Silva Nunes", role = "aut"),
-             person("Leonardo", "de Mattos Galhardo", role = "aut"))
+Authors@R: c(person("Thaís", "Paiva", role = c("cre", "aut")),
+             person("Letícia", "Silva Nunes", role = c("cre", "aut")),
+             person("Leonardo", "de Mattos Galhardo", role = c("cre", "aut")))
+Author: Leonardo de Mattos Galhardo [aut, cre] 
+        Thaís Paiva [aut],
+        Letícia Silva Nunes [aut]
+Maintainer: Leonardo de Mattos Galhardo <leomgal20@hotmail.com>
 Description: Implementation of the methodology described in \url{http://est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}.
 License: None
 Encoding: UTF-8
