@@ -22,10 +22,6 @@ Function \code{prepare_data} has the goal of receiving the database of the user 
 and in the end to generate the synthetic coordinates.
 In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid}.
 }
-\examples{
-  prepare_data(dataset = my_database, coord = coordinates_of_the_database, grid = 20)
-
-}
 \references{
 NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
 Disponível em: \url:{http//est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}. Acesso em: 2 mar. 2022.
