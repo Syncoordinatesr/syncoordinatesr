@@ -3,7 +3,7 @@
 \docType{package}
 \name{syncoordinatesr}
 \alias{syncoordinatesr}
-\title{syncoordinatesr: Synthetic Data Generator}
+\title{Synthetic Data Generator}
 \description{
 The \pkg{syncoordinatesr} package generates synthetic coordinates for your database.
 Inspired by the research article of Thais Paiva: \url{https://onlinelibrary.wiley.com/doi/10.1002/sim.6078}.

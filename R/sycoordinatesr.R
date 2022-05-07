@@ -1,4 +1,4 @@
-#' @title syncoordinatesr: Synthetic Data Generator
+#' @title Synthetic Data Generator
 #'
 #' @name syncoordinatesr
 #'
