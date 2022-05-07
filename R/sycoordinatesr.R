@@ -1,6 +1,8 @@
 #' @title syncoordinatesr: Synthetic Data Generator
 #'
-#' @descirption The \pkg{syncoordinatesr} package generates synthetic coordinates for your database.
+#' @name syncoordinatesr
+#'
+#' @description The \pkg{syncoordinatesr} package generates synthetic coordinates for your database.
 #' Inspired by the research article of Thaís Paiva: \url{https://onlinelibrary.wiley.com/doi/10.1002/sim.6078}.
 #' And the masters dissertation of Letícia Nunes: \url{http://est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}.
 #' The package contains functions able to generate synthetic coordinates using the method explained in both articles.
@@ -16,4 +18,4 @@
 #' }
 #'
 #' @docType package
-#' @name syncoordinatesr
+NULL
