@@ -3,18 +3,18 @@
 #' @name syncoordinatesr
 #'
 #' @description The \pkg{syncoordinatesr} package generates synthetic coordinates for your database.
-#' Inspired by the research article of Thaís Paiva: \url{https://onlinelibrary.wiley.com/doi/10.1002/sim.6078}.
-#' And the masters dissertation of Letícia Nunes: \url{http://est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}.
+#' Inspired by the research article of Thais Paiva: \url{https://onlinelibrary.wiley.com/doi/10.1002/sim.6078}.
+#' And the masters dissertation of Leticia Nunes: \url{http://est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}.
 #' The package contains functions able to generate synthetic coordinates using the method explained in both articles.
-#' This method simulates synthetic data, that are generated from specified probability distributions with the intetion to be as close as possible of the original data,
+#' This method simulates synthetic data, that are generated from specified probability distributions with the intention to be as close as possible of the original data,
 #' but without spreading the original information and don't compromising the final analysis.
 #'
 #' @author
 #' Authors:
 #' \itemize{
 #' \item{Leonardo de Mattos Galhardo}
-#' \item{Letícia Silva Nunes}
-#' \item{Thaís Paiva}
+#' \item{Leticia Silva Nunes}
+#' \item{Thais Paiva}
 #' }
 #'
 #' @docType package
