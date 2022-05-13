@@ -9,7 +9,9 @@
 #' @param  dataset   A data frame with all the information except the coordinates
 #' @param  S   Quantities of simulations that will be made. With a default result of (S = 5000)
 #' @param  burn   The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)
-#' @param  return_paramenters  Option to return the result of the parameters
+#' @param  continuous  Option so the user can choose between a continuous variable or a discrete. With default using a discrete variable
+#' @param  spatial_beta  Option so you can choose to use a spatial beta parameter
+#' @param  return_paramenters  Option to return the result of the parameters. With default not returning the parameters
 #'
 #' @return  Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter, or all other significant parameters too.
 #'
@@ -20,12 +22,14 @@
 #' @examples
 #'   syn_mcmc(dataset = my_database, S = 2500, burn = 500, return_parameters = TRUE)
 #'
-#' @import ars
+#' @import ars, MfUSampler
 #'
 #' @export
 
 syn_mcmc <- function(dataset, coord, grid = 10,
-                           S = 5000, burn = 1000, return_parameters = FALSE){
+                          S = 5000, burn = 1000,
+                          continuous = FALSE, spatial_beta = FALSE,
+                          return_parameters = FALSE){
 
   saida = prepare_data(dataset, coord, grid)
 
@@ -37,22 +41,31 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   # sub.a = saida$sub.a
   # W = saida$W
 
+  # Falta Z e z.pad
+
+  acomb = function(x,i) i %in% x #Added
+
   # Inicializando os parâmetros
 
-  alfa = matrix(0, sum(saida$nx - 1), S)
+  alfa = matrix(0, sum(nx - 1), S) #Changing saida$nx for nx
   alfa[,1] = 0
 
   mu = numeric(S)
   mu[1] = 1
 
-  theta = matrix(0, saida$G, S)
-  theta[,1] = theta[,1] - sum(theta[,1])/(saida$G)
+  # Adding beta
+  beta = matrix(0,G,S)
+  beta[,1] = 0
+  beta.atual=beta[,1] #Added
+
+  theta = matrix(0, G, S)  #Changing saida$G for G
+  theta[,1] = theta[,1] - sum(theta[,1])/(G)  #Changing saida$G for G
   theta.atual = theta[,1]
 
   tau.theta = numeric(S)
   tau.theta[1] = 1
 
-  phi = array(data=0,dim=c(saida$G,S,sum(saida$nx-1)))
+  phi = array(data=0,dim=c(G,S,sum(nx-1))) #Changing saida$G for G and changing saida$nx for nx
   for(i in 1:dim(phi)[3]){
     phi[,1,i] = phi[,1,i] - mean(phi[,1,i])
   }
@@ -61,31 +74,38 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
-  epsilon = array(data=0, dim=c(saida$G, 1, saida$B))
+  # tau_beta - precision of the other car models - gamma prior - ADDED
+  tau.beta = numeric(S)
+  tau.beta[1] = 1
+
+  epsilon = array(data=0, dim=c(G, 1, B)) #Changing saida$G for G and changing saida$B for B
 
   tau.e = numeric(S)
   tau.e[1] = 1
 
   # Hyperparameters (no futuro tornar possível para o usuário alterar)
 
-  atheta = 0.1
-  btheta = 0.1
+  atheta = abeta = 0.1 #Changed
+  btheta = bbeta = 0.1 #Changed
   aphi = 0.1
   bphi = 0.1
   vmu = 5
   valfa = 5
+  vbeta = 5 #Added
   m.bar = mean(ni)
   be = 0.1; ae = m.bar*(0.7^2)*be
+  eta = matrix(,G,B) #Added
+  eta.atual = matrix(,G,B) #Added
 
   # Preditor linear
 
-  gama = array(data=0, dim=c(saida$G, 1, saida$B))
-  for(i in saida$b){
+  gama = array(data=0, dim=c(G, 1, B)) #Changing saida$G for G and changing saida$B for B
+  for(i in b){
     if(length(ind.a[[i]])==0){
-      gama[,1,i] = log(saida$n) + mu[1] + theta[,1] + epsilon[,1,i]
+      gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
     }
     else{
-      gama[,1,i] = log(saida$n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
+      gama[,1,i] = log(n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
         theta[,1] + ifelse(length(ind.a[[i]])>1,
                            apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
                            phi[,1,ind.a[[i]]]) + epsilon[,1,i]
@@ -93,12 +113,14 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   }
   gama.atual = gama[,1,]
 
-  lambda = array(data=0,dim=c(saida$G, S, saida$B))
+  lambda = array(data=0,dim=c(G, S, B)) #Changing saida$G for G and changing saida$B for B
 
-  media.lambda = matrix(0, saida$G, saida$B)
+  media.lambda = matrix(0, G, B) #Changing saida$G for G and changing saida$B for B
 
   ##########################
   # começo real do mcmc
+
+  controle=MfU.Control(n=1,slice.w=.01,slice.m=10000,slice.lower=0,slice.upper=1)
 
   for (k in 2:S){
 
@@ -111,16 +133,28 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                 sumeta=sumeta, vmu=vmu, ci_b=saida$n)
     gama.atual = eta + mu[k]
 
-    for(t in 1:dim(alfa)[1]){
-      # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
-      ## it's accessing the wrong dimension of ci_b, it should be:
-      n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
-      eta = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
-      sumeta.a = sum(exp(eta))
-      alfa[t,k] <- ars(1, muf, mufprima,
-                       lb=T, xlb=-100, ub=T, xub=100,
-                       sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
-      gama.atual[,sub.a[[t]]] = eta + alfa[t,k]
+    if(continuous = FALSE){
+
+      for(t in 1:dim(alfa)[1]){
+        # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
+        ## it's accessing the wrong dimension of ci_b, it should be:
+        n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
+        eta = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
+        sumeta.a = sum(exp(eta))
+        alfa[t,k] <- ars(1, muf, mufprima,
+                         lb=T, xlb=-100, ub=T, xub=100,
+                         sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
+        gama.atual[,sub.a[[t]]] = eta + alfa[t,k]
+      }
+    } else{
+      for(t in 1:dim(alfa)[1]){
+        temp = apply(Z,MAR=2,FUN=acomb,t)
+        n.alfa=sum(ci_b[,temp])
+        eta=gama.atual[,temp]-alfa[t,(k-1)] #Usando gama.atual ao inves de eta.atual
+        sumeta.a=sum(exp(eta))
+        alfa[t,k] <- ars(1, muf,mufprima,lb=T,xlb=-100,ub=T,xub=100,sumeta=sumeta.a,vmu=valfa,ci_b=n.alfa)
+        gama.atual[,temp] = eta + alfa[t,k] #Usando gama.atual ao inves de eta.atual
+      }
     }
 
     # n.theta = apply(ci_b, MAR=2, FUN=sum) ## original code by Leticia
@@ -138,28 +172,61 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     theta[,k] = theta.atual - sum(theta.atual)/saida$G
     gama.atual = eta + theta[,k]
 
-    for(t in 1:dim(phi)[3]){
-      # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
-      ## there is also a problem with the dimensions of ci_b
-      n.phi = apply(saida$ci_b[,sub.a[[t]]],MAR=1,FUN=sum) ## changed by Thais (Feb/2022)
-      eta = gama.atual[,sub.a[[t]]] - phi[,(k-1),t]
-      for(g in 1:saida$G){
-        sum.phi = sum(exp(eta[g,]))
-        bar = W[g,]%*%phi.atual[,t]/ni[g]
-        phi.atual[g,t] = ars(1, thetaf, thetafprima, ns=1000,
-                             lb=T, xlb=-100, ub=T, xub=100,
-                             ci_b=n.phi[g], sumeta=sum.phi, ni=ni[g],
-                             tau.f=tau.phi[t,(k-1)], bar.f=bar)
+    if(continuous = FALSE){
+
+      for(t in 1:dim(phi)[3]){
+        # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
+        ## there is also a problem with the dimensions of ci_b
+        n.phi = apply(saida$ci_b[,sub.a[[t]]],MAR=1,FUN=sum) ## changed by Thais (Feb/2022)
+        eta = gama.atual[,sub.a[[t]]] - phi[,(k-1),t]
+        for(g in 1:saida$G){
+          sum.phi = sum(exp(eta[g,]))
+          bar = W[g,]%*%phi.atual[,t]/ni[g]
+          phi.atual[g,t] = ars(1, thetaf, thetafprima, ns=1000,
+                               lb=T, xlb=-100, ub=T, xub=100,
+                               ci_b=n.phi[g], sumeta=sum.phi, ni=ni[g],
+                               tau.f=tau.phi[t,(k-1)], bar.f=bar)
+        }
+        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/saida$G
+        # gama.atual[,sub.a[[k]]] = eta + phi[,k,t] ## original by Leticia
+        ## seems like it was saving the updated gama in the wrong positions
+        ## k is the simulations' index, should not be used to save gama!
+        gama.atual[,sub.a[[t]]] = eta + phi[,k,t] ## changed by Thais (Feb/22)
       }
-      phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/saida$G
-      # gama.atual[,sub.a[[k]]] = eta + phi[,k,t] ## original by Leticia
-      ## seems like it was saving the updated gama in the wrong positions
-      ## k is the simulations' index, should not be used to save gama!
-      gama.atual[,sub.a[[t]]] = eta + phi[,k,t] ## changed by Thais (Feb/22)
+    } else{
+      for(t in 1:dim(phi)[3]){
+        temp = apply(Z,MAR=2,FUN=acomb,t)
+        n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
+        eta = gama.atual[,temp] - phi[,(k-1),t] #Usando gama.atual ao inves de eta.atual
+        for(g in 1:G){
+          sum.phi = sum(exp(eta[g,]))
+          bar = W[g,]%*%phi.atual[,t]/ni[g]
+          phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
+        }
+        ## Soma igual a zero
+        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
+        gama.atual[,temp] = eta + phi[,k,t] #Usando gama.atual ao inves de eta.atual
+      }
     }
 
-    for(g in 1:saida$G){
-      for(j in 1:saida$B){
+    #Adding beta
+    eta = gama.atual - beta[,(k-1)]*z.pad #Usando gama.atual ao inves de eta.atual
+    c.f = apply(ci_b*z.pad,MAR=1,FUN=sum)
+    for(g in 1:G){
+      zib.vec = z.pad[g,]
+      u <- 0
+      u <- (MfU.Sample(x=logit(beta[g,k-1]),f=betaf,uni.sampler="slice",c.f=c.f[g],eta=eta[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
+      beta[g,k] = inv.logit(u)
+    }
+    if(spatial_beta = FALSE){
+      gama.atual = eta + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
+    } else{
+      beta[,k] = beta.atual - sum(beta.atual)/G
+      gama.atual = eta + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
+    }
+
+    for(g in 1:G){ #Changing saida$G for G
+      for(j in 1:B){ #Changing saida$B for B
         eta = gama.atual[g,j] - epsilon[g,1,j]
         sum.aux = exp(eta)
         epsilon[g,1,j] = ars(1, ef, efprima,
