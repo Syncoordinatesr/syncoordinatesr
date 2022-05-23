@@ -17,9 +17,9 @@ prepare_data(dataset, coord, grid = 10)
 A list containing useful objects to the mcmc function.
 }
 \description{
-An auxiliary function to generate useful objects for the order functions in this package
+An auxiliary function to generate useful objects for the other functions in this package.
 Function \code{prepare_data} has the goal of receiving the database of the user to generate important variables that will be used in the MCMC.
-and in the end to generate the synthetic coordinates.
+And in the end to generate the synthetic coordinates.
 In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid}.
 }
 \references{

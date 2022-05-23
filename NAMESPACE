@@ -2,6 +2,6 @@
 
 export(syn_mcmc)
 export(syncoordinates)
-import("ars,")
 import(MfUSampler)
+import(ars)
 import(spdep)
