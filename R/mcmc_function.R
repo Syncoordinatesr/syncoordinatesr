@@ -22,7 +22,7 @@
 #' @examples
 #'   syn_mcmc(dataset = my_database, S = 2500, burn = 500, return_parameters = TRUE)
 #'
-#' @import ars, MfUSampler
+#' @import ars MfUSampler
 #'
 #' @export
 
