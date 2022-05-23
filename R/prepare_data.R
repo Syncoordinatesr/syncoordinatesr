@@ -124,7 +124,55 @@ prepare_data <- function(dataset, coord, grid = 10){
     }
   }
 
+  Z <- matrix(,n,1)
+  sigma.z=10
+
+  #Falta Z barra
+
+  for (i in 1:n){
+    if(comb[i]==1){
+      Z[i] <- rnorm(1,zbarra1,sigma.z)}
+
+    if(comb[i]==2){
+      Z[i] <- rnorm(1,zbarra2,sigma.z)}
+
+    if(comb[i]==3){
+      Z[i] <- rnorm(1,zbarra3,sigma.z)}
+
+    if(comb[i]==4){
+      Z[i] <- rnorm(1,zbarra4,sigma.z)}
+
+    if(comb[i]==5){
+      Z[i] <- rnorm(1,zbarra5,sigma.z)}
+
+    if(comb[i]==6){
+      Z[i] <- rnorm(1,zbarra6,sigma.z)}
+
+    if(comb[i]==7){
+      Z[i] <- rnorm(1,zbarra7,sigma.z)}
+
+    if(comb[i]==8){
+      Z[i] <- rnorm(1,zbarra8,sigma.z)}
+
+    if(comb[i]==9){
+      Z[i] <- rnorm(1,zbarra9,sigma.z)}
+
+    if(comb[i]==10){
+      Z[i] <- rnorm(1,zbarra10,sigma.z)}
+
+    if(comb[i]==11){
+      Z[i] <- rnorm(1,zbarra11,sigma.z)}
+
+    if(comb[i]==12){
+      Z[i] <- rnorm(1,zbarra12,sigma.z)}
+
+  }#Valor deveria depender do valor de b
+
+  for(i in 1:n){
+    z.pad[i] <- (Z[i]/mean(Z))/sd(Z)
+  }
+
   return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
               latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,
-              ind.a=ind.a, sub.a=sub.a, W=W))
+              ind.a=ind.a, sub.a=sub.a, W=W, Z=Z, z.pad=z.pad))
 }
