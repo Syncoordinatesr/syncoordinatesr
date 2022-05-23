@@ -94,8 +94,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   vbeta = 5 #Added
   m.bar = mean(ni)
   be = 0.1; ae = m.bar*(0.7^2)*be
-  eta = matrix(,G,B) #Added
-  eta.atual = matrix(,G,B) #Added
+  eta = matrix(NA,G,B) #Added
+  eta.atual = matrix(NA,G,B) #Added
 
   # Preditor linear
 
@@ -133,7 +133,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                 sumeta=sumeta, vmu=vmu, ci_b=saida$n)
     gama.atual = eta + mu[k]
 
-    if(continuous = FALSE){
+    if(continuous == FALSE){
 
       for(t in 1:dim(alfa)[1]){
         # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
@@ -172,7 +172,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     theta[,k] = theta.atual - sum(theta.atual)/saida$G
     gama.atual = eta + theta[,k]
 
-    if(continuous = FALSE){
+    if(continuous == FALSE){
 
       for(t in 1:dim(phi)[3]){
         # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
@@ -218,7 +218,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       u <- (MfU.Sample(x=logit(beta[g,k-1]),f=betaf,uni.sampler="slice",c.f=c.f[g],eta=eta[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
       beta[g,k] = inv.logit(u)
     }
-    if(spatial_beta = FALSE){
+    if(spatial_beta == FALSE){
       gama.atual = eta + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
     } else{
       beta[,k] = beta.atual - sum(beta.atual)/G
