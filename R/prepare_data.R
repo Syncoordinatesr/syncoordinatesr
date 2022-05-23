@@ -181,8 +181,10 @@ prepare_data <- function(dataset, coord, grid = 10){
 
   }#Valor deveria depender do valor de b
 
+  z.pad <- matrix(NA, n, 1)
+
   for(i in 1:n){
-    z.pad[i] <- (Z[i]/mean(Z))/sd(Z)
+    z.pad[i] <- (Z[i]-mean(Z))/sd(Z)
   }
 
   return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,

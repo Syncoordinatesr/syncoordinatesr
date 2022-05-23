@@ -35,11 +35,6 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   # assigning the elements of the output to new objects
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
-  # ci_b = saida$ci_b
-  # ni = saida$ni
-  # ind.a = saida$ind.a
-  # sub.a = saida$sub.a
-  # W = saida$W
 
   # Falta Z e z.pad
 
@@ -47,7 +42,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   # Inicializando os parâmetros
 
-  alfa = matrix(0, sum(nx - 1), S) #Changing saida$nx for nx
+  alfa = matrix(0, sum(nx - 1), S)
   alfa[,1] = 0
 
   mu = numeric(S)
@@ -58,14 +53,14 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   beta[,1] = 0
   beta.atual=beta[,1] #Added
 
-  theta = matrix(0, G, S)  #Changing saida$G for G
-  theta[,1] = theta[,1] - sum(theta[,1])/(G)  #Changing saida$G for G
+  theta = matrix(0, G, S)
+  theta[,1] = theta[,1] - sum(theta[,1])/(G)
   theta.atual = theta[,1]
 
   tau.theta = numeric(S)
   tau.theta[1] = 1
 
-  phi = array(data=0,dim=c(G,S,sum(nx-1))) #Changing saida$G for G and changing saida$nx for nx
+  phi = array(data=0,dim=c(G,S,sum(nx-1)))
   for(i in 1:dim(phi)[3]){
     phi[,1,i] = phi[,1,i] - mean(phi[,1,i])
   }
@@ -74,11 +69,10 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
-  # tau_beta - precision of the other car models - gamma prior - ADDED
   tau.beta = numeric(S)
   tau.beta[1] = 1
 
-  epsilon = array(data=0, dim=c(G, 1, B)) #Changing saida$G for G and changing saida$B for B
+  epsilon = array(data=0, dim=c(G, 1, B))
 
   tau.e = numeric(S)
   tau.e[1] = 1
@@ -99,7 +93,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   # Preditor linear
 
-  gama = array(data=0, dim=c(G, 1, B)) #Changing saida$G for G and changing saida$B for B
+  gama = array(data=0, dim=c(G, 1, B))
   for(i in b){
     if(length(ind.a[[i]])==0){
       gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
@@ -113,9 +107,9 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   }
   gama.atual = gama[,1,]
 
-  lambda = array(data=0,dim=c(G, S, B)) #Changing saida$G for G and changing saida$B for B
+  lambda = array(data=0,dim=c(G, S, B))
 
-  media.lambda = matrix(0, G, B) #Changing saida$G for G and changing saida$B for B
+  media.lambda = matrix(0, G, B)
 
   ##########################
   # começo real do mcmc
