@@ -10,6 +10,8 @@ syn_mcmc(
   grid = 10,
   S = 5000,
   burn = 1000,
+  continuous = FALSE,
+  spatial_beta = FALSE,
   return_parameters = FALSE
 )
 }
@@ -20,7 +22,11 @@ syn_mcmc(
 
 \item{burn}{The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)}
 
-\item{return_paramenters}{Option to return the result of the parameters}
+\item{continuous}{Option so the user can choose between a continuous variable or a discrete. With default using a discrete variable}
+
+\item{spatial_beta}{Option so you can choose to use a spatial beta parameter}
+
+\item{return_paramenters}{Option to return the result of the parameters. With default not returning the parameters}
 }
 \value{
 Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter, or all other significant parameters too.
