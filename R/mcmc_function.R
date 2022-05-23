@@ -36,6 +36,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   # assigning the elements of the output to new objects
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
 
+  #####Não está encontrando as funções que estão na pasta Utils
+
   # Falta Z e z.pad
 
   acomb = function(x,i) i %in% x #Added
@@ -204,7 +206,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     }
 
     #Adding beta
-    eta = gama.atual - beta[,(k-1)]*z.pad #Usando gama.atual ao inves de eta.atual
+    eta = gama.atual - beta[,(k-1)]*z.pad #Usando gama.atual ao inves de eta.atual ######ERRO
     c.f = apply(ci_b*z.pad,MAR=1,FUN=sum)
     for(g in 1:G){
       zib.vec = z.pad[g,]
