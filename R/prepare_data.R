@@ -124,7 +124,7 @@ prepare_data <- function(dataset, coord, grid = 10){
     }
   }
 
-  Z <- matrix(,n,1)
+  Z <- matrix(NA, n, 1)
   sigma.z=10
 
   #Falta Z barra
