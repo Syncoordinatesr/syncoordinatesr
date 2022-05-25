@@ -10,6 +10,7 @@
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
 #' @param   grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
+#' @param   continuous A condition if the dataset contains or not continuous variables
 #'
 #' @return  A list containing useful objects to the mcmc function.
 #'
@@ -19,7 +20,7 @@
 #'
 #' @import spdep
 
-prepare_data <- function(dataset, coord, grid = 10){
+prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
   # Fazer um tratamento melhor dos erros
   if (!is.data.frame(dataset))
@@ -27,6 +28,60 @@ prepare_data <- function(dataset, coord, grid = 10){
   if (!(nrow(dataset) == nrow(coord)))
     stop("Both objects: 'dataset' and 'coord' must have the same numer of lines (elements)")
   #if (!(integer(grid))) stop("The grid should be an integer value")
+
+  #######  NEW  #######
+  if(continuous = TRUE){
+    n = dim(dataset)[1] ; p = dim(dataset)[2]
+
+    dataset_dis = matrix(NA, n, p)
+    dataset_dis = as.data.frame(dataset_dis)
+    Z = matrix(NA, n, p)
+    Z = as.data.frame(Z)
+
+    for(i in 1:p){
+      if(is.factor(dataset[,i])){
+        dataset_dis[,i] = dataset[,i]
+      } else{
+        if(is.integer(dataset[,i])){
+          dataset_dis[,i] = dataset[,i]
+        } else{
+          Z[,i] = dataset[,i]
+        }
+      }
+    }
+
+    names_ori = names(dataset)
+
+    while(p >= 1){
+      if(all(is.na(dataset_dis[,p]))){
+        dataset_dis = dataset_dis[,-p]
+        names_ori = names_ori[-p]
+        p = p-1
+      } else{
+        p = p-1
+      }
+    }
+
+    names(dataset_dis) = names(names_ori)
+
+    p = dim(dataset)[2]
+    names_ori = names(dataset)
+
+    while(p >= 1){
+      if(all(is.na(Z[,p]))){
+        Z = Z[,-p]
+        names_ori = names_ori[-p]
+        p = p-1
+      } else{
+        p = p-1
+      }
+    }
+
+    names(Z) = names(names_ori)
+
+    dataset = dataset_dis #Dataset now only contain non continuous variables
+  }
+  #########  END  #########
 
   n = dim(dataset)[1] ; p = dim(dataset)[2]
   vx = list(1); vx = c(vx,2:p)
@@ -123,9 +178,6 @@ prepare_data <- function(dataset, coord, grid = 10){
         sub.a[[i]] = c(sub.a[[i]],j)
     }
   }
-
-  Z <- matrix(NA, n, 1)
-  sigma.z=10
 
   #Falta Z barra
 

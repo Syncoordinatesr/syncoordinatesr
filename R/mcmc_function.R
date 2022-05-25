@@ -9,7 +9,7 @@
 #' @param  dataset   A data frame with all the information except the coordinates
 #' @param  S   Quantities of simulations that will be made. With a default result of (S = 5000)
 #' @param  burn   The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)
-#' @param  continuous  Option so the user can choose between a continuous variable or a discrete. With default using a discrete variable
+#' @param  continuous  Option so the user can warn the function for the presence of continuous variables in the dataset. With default considering only discrete variables
 #' @param  spatial_beta  Option so you can choose to use a spatial beta parameter
 #' @param  return_paramenters  Option to return the result of the parameters. With default not returning the parameters
 #'
@@ -31,7 +31,11 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                           continuous = FALSE, spatial_beta = FALSE,
                           return_parameters = FALSE){
 
-  saida = prepare_data(dataset, coord, grid)
+  if(continuous = TRUE){
+    saida = prepare_data(dataset, coord, grid, continuous = TRUE)
+  } else{
+    saida = prepare_data(dataset, coord, grid)
+  }
 
   # assigning the elements of the output to new objects
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
