@@ -5,7 +5,7 @@
 #' @description  An auxiliary function to generate useful objects for the other functions in this package.
 #' Function \code{prepare_data} has the goal of receiving the database of the user to generate important variables that will be used in the MCMC.
 #' And in the end to generate the synthetic coordinates.
-#' In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid}.
+#' In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid},  \code{continuous}.
 #'
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
@@ -29,61 +29,22 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     stop("Both objects: 'dataset' and 'coord' must have the same numer of lines (elements)")
   #if (!(integer(grid))) stop("The grid should be an integer value")
 
-  #######  NEW  #######
-  if(continuous == TRUE){
-    n = dim(dataset)[1] ; p = dim(dataset)[2]
-
-    dataset_dis = matrix(NA, n, p)
-    dataset_dis = as.data.frame(dataset_dis)
-    Z = matrix(NA, n, p)
-    Z = as.data.frame(Z)
-
-    for(i in 1:p){
-      if(is.factor(dataset[,i])){
-        dataset_dis[,i] = dataset[,i]
-      } else{
-        if(is.integer(dataset[,i])){
-          dataset_dis[,i] = dataset[,i]
-        } else{
-          Z[,i] = dataset[,i]
-        }
-      }
-    }
-
-    names_ori = names(dataset)
-
-    while(p >= 1){
-      if(all(is.na(dataset_dis[,p]))){
-        dataset_dis = dataset_dis[,-p]
-        names_ori = names_ori[-p]
-        p = p-1
-      } else{
-        p = p-1
-      }
-    }
-
-    names(dataset_dis) = names(names_ori)
-
-    p = dim(dataset)[2]
-    names_ori = names(dataset)
-
-    while(p >= 1){
-      if(all(is.na(Z[,p]))){
-        Z = Z[,-p]
-        names_ori = names_ori[-p]
-        p = p-1
-      } else{
-        p = p-1
-      }
-    }
-
-    names(Z) = names(names_ori)
-
-    dataset = dataset_dis #Dataset now only contain non continuous variables
-  }
-  #########  END  #########     PROBLEMA: Nos dados simulados as primeiras colunas estao dando como numeros nao inteiros
-
   n = dim(dataset)[1] ; p = dim(dataset)[2]
+
+  #######  NEW  #######
+  if(continuous != FALSE){
+    Z = matrix(NA, n, length(continuous))
+    for(i in 1:length(continuous)){
+      col_Z = continuous[i]
+      Z[, i] = dataset[, col_Z]
+    }
+    for(i in 1:length(continuous)){
+      col_Z = continuous[i]
+      dataset = dataset[, -col_Z]
+    }
+  }
+  #########  END  #########
+
   vx = list(1); vx = c(vx,2:p)
   for(i in 1:p){
     vx[[i]] = sort(unique(dataset[,i]))
@@ -180,21 +141,25 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   }
 
   #######  NEW  #######
-  if(continuous == TRUE){
-    z.bar <- matrix(NA, G, B)
+  if(continuous != FALSE){
+    #z.bar <- matrix(NA, G, B)
+    #
+    #for(b in 1:B){
+    #  z.bar[comb == b,] = mean(Z[comb == b,])
+    #}
 
-    for(b in 1:B){
-      z.bar[comb == b] = mean(Z[comb == b])
-    }
+    dim_Z = dim(Z)[2]
 
     z.pad <- matrix(NA, G, B)
 
-    for(b in 1:B){
-      z.pad[comb == b] = (Z[comb == b]-mean(Z[comb == b]))/sd(Z[comb == b])
+    for(d in 1:dim_Z){
+      for(b in 1:B){
+        z.pad[, b] = (Z[comb == b, d]-mean(Z[comb == b, d]))/sd(Z[comb == b, d])
+      }
     }
   }
-  #######  END  #######
-  if(continuous == TRUE){
+  #######  END  ####### Dando erro pois cada comb tem um número de elementos específicos. Dando o erro:number of items to replace is not a multiple of replacement length
+  if(continuous != FALSE){
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,
                 ind.a=ind.a, sub.a=sub.a, W=W, z.pad=z.pad))
