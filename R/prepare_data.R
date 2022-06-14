@@ -20,6 +20,7 @@
 #'
 #' @import spdep
 
+#### Escrever o help do continuous direito e com o que te, que receber, colocar observação no help do pacote que para mais de uma variavel continua não foi implementado ainda
 prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
   # Fazer um tratamento melhor dos erros
@@ -29,7 +30,7 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     stop("Both objects: 'dataset' and 'coord' must have the same numer of lines (elements)")
   #if (!(integer(grid))) stop("The grid should be an integer value")
 
-  n = dim(dataset)[1] ; p = dim(dataset)[2]
+  n = dim(dataset)[1]
 
   #######  NEW  #######
   if(continuous != FALSE){
@@ -44,6 +45,8 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     }
   }
   #########  END  #########
+
+  p = dim(dataset)[2]
 
   vx = list(1); vx = c(vx,2:p)
   for(i in 1:p){
@@ -142,23 +145,26 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
   #######  NEW  #######
   if(continuous != FALSE){
-    #z.bar <- matrix(NA, G, B)
-    #
-    #for(b in 1:B){
-    #  z.bar[comb == b,] = mean(Z[comb == b,])
-    #}
 
-    dim_Z = dim(Z)[2]
+    dim_Z = ncol(Z)
 
-    z.pad <- matrix(NA, G, B)
+    z.bar = z.pad = array(NA, c(G, B, dim_Z))
+
+    for(d in 1:dim_Z){
+      for(i in 1:G){
+        for(j in 1:B){
+            z.bar[i, j, d] = mean(Z[cel == i & comb == j, d], na.rm = TRUE)
+        }
+      }
+    }
 
     for(d in 1:dim_Z){
       for(b in 1:B){
-        z.pad[, b] = (Z[comb == b, d]-mean(Z[comb == b, d]))/sd(Z[comb == b, d])
+        z.pad[, b, d] = (z.bar[, b, d]-mean(z.bar[, b, d], na.rm = TRUE))/sd(z.bar[, b, d], na.rm = TRUE)
       }
     }
   }
-  #######  END  ####### Dando erro pois cada comb tem um número de elementos específicos. Dando o erro:number of items to replace is not a multiple of replacement length
+  #######  END  ####### Fazer mais alguns testes, fazer plots com image(x = longitude(lonvec), y = latitude(latvec), matrix(Z,g,g))
   if(continuous != FALSE){
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,
