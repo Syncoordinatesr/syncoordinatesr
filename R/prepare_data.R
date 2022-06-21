@@ -99,7 +99,7 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   comb = numeric(n)
   for(i in 1:n){
     for (j in 1:B){
-      if (sum(dados[i,1:p]== u[j,])==p)
+      if (sum(dataset[i,1:p]== u[j,])==p)
         comb[i]=j
     }
   }
