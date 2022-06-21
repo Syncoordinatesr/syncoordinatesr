@@ -58,16 +58,16 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     nx[i] = length(vx[[i]])
   }
 
-  B = prod(nx)
-  b = 1:B
+  #B = prod(nx)
+  #b = 1:B
 
-  b.matrix = matrix(0,B,p+1)
-  b.matrix[,1] = b
-  b.matrix[,2] = rep(vx[[1]], times=1, each=prod(nx[2:p]))
-  for(i in 2:p){
-    b.matrix[,i+1] = rep(vx[[i]], times=prod(nx[1:(i-1)]),
-                         each=prod(nx[(i+1):p]))
-  }
+  #b.matrix = matrix(0,B,p+1)
+  #b.matrix[,1] = b
+  #b.matrix[,2] = rep(vx[[1]], times=1, each=prod(nx[2:p]))
+  #for(i in 2:p){
+  #  b.matrix[,i+1] = rep(vx[[i]], times=prod(nx[1:(i-1)]),
+  #                       each=prod(nx[(i+1):p]))
+  #}
 
   G = grid*grid
 
@@ -94,12 +94,15 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   }
 
   dados.ord = dataset[do.call(order, dataset), ]
-  u = unique(dados.ord)
+  b.matrix = unique(dados.ord)
+
+  B = nrow(b.matrix)
+  b = 1:B
 
   comb = numeric(n)
   for(i in 1:n){
     for (j in 1:B){
-      if (sum(dataset[i,1:p]== u[j,])==p)
+      if (sum(dataset[i,1:p]== b.matrix[j,])==p)
         comb[i]=j
     }
   }
