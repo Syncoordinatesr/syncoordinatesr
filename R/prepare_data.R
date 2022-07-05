@@ -98,11 +98,12 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
   B = nrow(b.matrix)
   b = 1:B
+  b.matrix = cbind(b, b.matrix)
 
   comb = numeric(n)
   for(i in 1:n){
     for (j in 1:B){
-      if (sum(dataset[i,1:p]== b.matrix[j,])==p)
+      if (sum(dataset[i,1:p]== b.matrix[j,-1])==p)
         comb[i]=j
     }
   }
@@ -149,11 +150,11 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   #######  NEW  #######
   if(continuous != FALSE){
 
-    dim_Z = ncol(Z)
+    vZ = ncol(Z)
 
-    z.bar = z.pad = array(NA, c(G, B, dim_Z))
+    z.bar = z.pad = array(NA, c(G, B, vZ))
 
-    for(d in 1:dim_Z){
+    for(d in 1:vZ){
       for(i in 1:G){
         for(j in 1:B){
             z.bar[i, j, d] = mean(Z[cel == i & comb == j, d], na.rm = TRUE)
@@ -161,7 +162,7 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
       }
     }
 
-    for(d in 1:dim_Z){
+    for(d in 1:vZ){
       for(b in 1:B){
         z.pad[, b, d] = (z.bar[, b, d]-mean(z.bar[, b, d], na.rm = TRUE))/sd(z.bar[, b, d], na.rm = TRUE)
       }

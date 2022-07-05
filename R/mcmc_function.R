@@ -54,12 +54,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   # Adding beta
   if(continuous != FALSE){
     beta = array(NA, c(G, S, length(continuous))) #Se colocar mais de uma variável contínua, precisamos mudar a dimensão do beta. ALTERADO
-    for(i in 1:length(continuous)){
-      for(j in 1:G){
-        beta[j+((i-1)*(G*S))] = 0
-      }
-    }
-    beta.atual = array(0, c(G, 1, length(continuous)))
+    beta[,1,] = 0
+    beta.atual = beta[,1,]
     #beta[,1] = 0
     #beta.atual = beta[,1]
   }
@@ -102,13 +98,13 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   eta = array(NA, c(G, B, length(continuous))) #Added ALTERADO
   eta.atual = array(NA, c(G, B, length(continuous))) #Added ALTERADO
 
-  # Preditor linear - faltando o beta CHECAR!!!!!!!!!!!
+  # Preditor linear - Ainda em alteração \\\ Checar se é preciso criar o eta ou se podemos utilizar o gama, gama está errado  \\\ FAZER RASCUNHO DAS DIMENSÕES DOS PARÂMETROS (mu, alfa, gama, G, B, b.matrix, etc)
 
   if(continuous != FALSE){
     for(k in 1:lenght(continuous)){
       for (j in 1:B){
         for (i in 1:G){
-          eta[i,j,k] = mu[1] + sum(alfa[Z[,j],1]) + theta[i] + beta[i+((k-1)*(B*G))]%*%z.pad[i,j,k] + sum(phi[i,1,Z[,j]]) + epsilon[i,j]
+          eta[i,j,k] = mu[1] + sum(alfa[Z[,j],1]) + theta[i] + beta[i,1,k]%*%z.pad[i,j,k] + sum(phi[i,1,Z[,j]]) + epsilon[i,j] #Olhar esse Z no alfa, depois conferir alteração no beta
           eta.atual[i,j,k] = eta[i,j,k]
         }
       }
@@ -123,7 +119,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   #  }
   #}
 
-  gama = array(data=0, dim=c(G, 1, B))
+  gama = array(data=0, dim=c(G, 1, B))   ### Precisa atualizar
   for(i in b){
     if(length(ind.a[[i]])==0){
       gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
