@@ -167,11 +167,11 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
       }
     }
   }
-  #######  END  ####### Fazer mais alguns testes, fazer plots com image(x = longitude(lonvec), y = latitude(latvec), matrix(Z,g,g))
+  #######  END  #######
   if(continuous != FALSE){
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,
-                ind.a=ind.a, sub.a=sub.a, W=W, z.pad=z.pad))
+                ind.a=ind.a, sub.a=sub.a, W=W, Z=Z, z.pad=z.pad)) # Z adicionado na saída
   } else{
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,

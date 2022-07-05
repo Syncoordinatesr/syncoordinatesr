@@ -31,18 +31,15 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                           continuous = FALSE, spatial_beta = FALSE,
                           return_parameters = FALSE){
 
-  if(continuous = TRUE){
-    saida = prepare_data(dataset, coord, grid, continuous = TRUE)
+  if(continuous != FALSE){
+    saida = prepare_data(dataset, coord, grid, continuous)
   } else{
     saida = prepare_data(dataset, coord, grid)
   }
 
   # assigning the elements of the output to new objects
+
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
-
-  #####Não está encontrando as funções que estão na pasta Utils
-
-  # Falta Z e z.pad
 
   acomb = function(x,i) i %in% x #Added
 
@@ -55,9 +52,17 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   mu[1] = 1
 
   # Adding beta
-  beta = matrix(0,G,S)
-  beta[,1] = 0
-  beta.atual=beta[,1] #Added
+  if(continuous != FALSE){
+    beta = array(NA, c(G, S, length(continuous))) #Se colocar mais de uma variável contínua, precisamos mudar a dimensão do beta. ALTERADO
+    for(i in 1:length(continuous)){
+      for(j in 1:G){
+        beta[j+((i-1)*(G*S))] = 0
+      }
+    }
+    beta.atual = array(0, c(G, 1, length(continuous)))
+    #beta[,1] = 0
+    #beta.atual = beta[,1]
+  }
 
   theta = matrix(0, G, S)
   theta[,1] = theta[,1] - sum(theta[,1])/(G)
@@ -94,10 +99,29 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   vbeta = 5 #Added
   m.bar = mean(ni)
   be = 0.1; ae = m.bar*(0.7^2)*be
-  eta = matrix(NA,G,B) #Added
-  eta.atual = matrix(NA,G,B) #Added
+  eta = array(NA, c(G, B, length(continuous))) #Added ALTERADO
+  eta.atual = array(NA, c(G, B, length(continuous))) #Added ALTERADO
 
-  # Preditor linear
+  # Preditor linear - faltando o beta CHECAR!!!!!!!!!!!
+
+  if(continuous != FALSE){
+    for(k in 1:lenght(continuous)){
+      for (j in 1:B){
+        for (i in 1:G){
+          eta[i,j,k] = mu[1] + sum(alfa[Z[,j],1]) + theta[i] + beta[i+((k-1)*(B*G))]%*%z.pad[i,j,k] + sum(phi[i,1,Z[,j]]) + epsilon[i,j]
+          eta.atual[i,j,k] = eta[i,j,k]
+        }
+      }
+    }
+  }
+
+  # ANTERIORMENTE NO DELA
+  #for (j in 1:B){
+  #  for (i in 1:G){
+  #    eta[i,j]=mu[1]+sum(alfa[Z[,j],1])+theta[i]+beta[i]%*%z.pad[i,j]+sum(phi[i,1,Z[,j]])+epsilon[i,j]
+  #    eta.atual[i,j]=eta[i,j]
+  #  }
+  #}
 
   gama = array(data=0, dim=c(G, 1, B))
   for(i in b){
@@ -225,8 +249,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       gama.atual = eta + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
     }
 
-    for(g in 1:G){ #Changing saida$G for G
-      for(j in 1:B){ #Changing saida$B for B
+    for(g in 1:G){
+      for(j in 1:B){
         eta = gama.atual[g,j] - epsilon[g,1,j]
         sum.aux = exp(eta)
         epsilon[g,1,j] = ars(1, ef, efprima,
@@ -269,6 +293,5 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda,
                 alfa=alfa, mu=mu, theta=theta, tau.theta=tau.theta, phi=phi, tau.phi=tau.phi, epsilon=epsilon, tau.e=tau.e))
   }
-
 
 }
