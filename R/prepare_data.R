@@ -34,12 +34,15 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
   #######  NEW  #######
   if(continuous != FALSE){
-    Z = matrix(NA, n, length(continuous))
-    for(i in 1:length(continuous)){
+
+    vZ = length(continuous)
+    Z = matrix(NA, n, vZ)
+
+    for(i in 1:vZ){
       col_Z = continuous[i]
       Z[, i] = dataset[, col_Z]
     }
-    for(i in 1:length(continuous)){
+    for(i in 1:vZ){
       col_Z = continuous[i]
       dataset = dataset[, -col_Z]
     }
@@ -150,8 +153,6 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   #######  NEW  #######
   if(continuous != FALSE){
 
-    vZ = ncol(Z)
-
     z.bar = z.pad = array(NA, c(G, B, vZ))
 
     for(d in 1:vZ){
@@ -172,7 +173,7 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   if(continuous != FALSE){
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,
-                ind.a=ind.a, sub.a=sub.a, W=W, Z=Z, z.pad=z.pad)) # Z adicionado na saída
+                ind.a=ind.a, sub.a=sub.a, W=W, Z=Z, vZ=vZ, z.pad=z.pad)) # Z adicionado na saída
   } else{
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,

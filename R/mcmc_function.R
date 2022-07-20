@@ -53,7 +53,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   # Adding beta
   if(continuous != FALSE){
-    beta = array(NA, c(G, S, length(continuous))) #Se colocar mais de uma variável contínua, precisamos mudar a dimensão do beta. ALTERADO
+    beta = array(NA, c(G, S, vZ))
     beta[,1,] = 0
     beta.atual = beta[,1,]
     #beta[,1] = 0
@@ -86,30 +86,30 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   # Hyperparameters (no futuro tornar possível para o usuário alterar)
 
-  atheta = abeta = 0.1 #Changed
-  btheta = bbeta = 0.1 #Changed
+  atheta = abeta = 0.1
+  btheta = bbeta = 0.1
   aphi = 0.1
   bphi = 0.1
   vmu = 5
   valfa = 5
-  vbeta = 5 #Added
+  vbeta = 5
   m.bar = mean(ni)
   be = 0.1; ae = m.bar*(0.7^2)*be
-  eta = array(NA, c(G, B, length(continuous))) #Added ALTERADO
-  eta.atual = array(NA, c(G, B, length(continuous))) #Added ALTERADO
+  #eta = array(NA, c(G, B, vZ))
+  #eta.atual = array(NA, c(G, B, vZ))
 
-  # Preditor linear - Ainda em alteração \\\ Checar se é preciso criar o eta ou se podemos utilizar o gama, gama está errado  \\\ FAZER RASCUNHO DAS DIMENSÕES DOS PARÂMETROS (mu, alfa, gama, G, B, b.matrix, etc)
+  # Preditor linear - Ainda em alteração \\\
 
-  if(continuous != FALSE){
-    for(k in 1:lenght(continuous)){
-      for (j in 1:B){
-        for (i in 1:G){
-          eta[i,j,k] = mu[1] + sum(alfa[Z[,j],1]) + theta[i] + beta[i,1,k]%*%z.pad[i,j,k] + sum(phi[i,1,Z[,j]]) + epsilon[i,j] #Olhar esse Z no alfa, depois conferir alteração no beta
-          eta.atual[i,j,k] = eta[i,j,k]
-        }
-      }
-    }
-  }
+  #if(continuous != FALSE){
+  #  for(k in 1:lenght(continuous)){
+  #    for (j in 1:B){
+  #      for (i in 1:G){
+  #        eta[i,j,k] = mu[1] + sum(alfa[Z[,j],1]) + theta[i] + beta[i,1,k]%*%z.pad[i,j,k] + sum(phi[i,1,Z[,j]]) + epsilon[i,j]
+  #        #eta.atual[i,j,k] = eta[i,j,k]
+  #      }
+  #    }
+  #  }
+  #}
 
   # ANTERIORMENTE NO DELA
   #for (j in 1:B){
@@ -119,19 +119,36 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   #  }
   #}
 
-  gama = array(data=0, dim=c(G, 1, B))   ### Precisa atualizar
-  for(i in b){
-    if(length(ind.a[[i]])==0){
-      gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
+  #gama = array(data=0, dim=c(G, 1, B))   ### Precisa atualizar
+  if(continuous != FALSE){
+    gama = array(data=0, dim=c(G, vZ, B))
+    for(k in 1:vZ){
+      for(i in b){
+        for(j in 1:G){
+          if(length(ind.a[[i]])==0){
+            gama[j,k,i] = mu[1] + theta[i] + beta[j,1,k]%*%z.pad[j,i,k] + epsilon[,1,i]
+          } else{
+            gama[j,k,i] = mu[1] + + sum(alfa[ind.a[[i]],1]) + theta[i] + beta[j,1,k]%*%z.pad[j,i,k] + sum(phi[,1,ind.a[[i]]]) + epsilon[,1,i]
+          }
+        }
+      }
     }
-    else{
-      gama[,1,i] = log(n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
-        theta[,1] + ifelse(length(ind.a[[i]])>1,
-                           apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
-                           phi[,1,ind.a[[i]]]) + epsilon[,1,i]
+    gama.atual = gama
+  } else{
+    gama = array(data=0, dim=c(G, 1, B))
+    for(i in b){
+      if(length(ind.a[[i]])==0){
+        gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
+      }
+      else{
+        gama[,1,i] = log(n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
+          theta[,1] + ifelse(length(ind.a[[i]])>1,
+                             apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
+                             phi[,1,ind.a[[i]]]) + epsilon[,1,i]
+      }
     }
+    gama.atual = gama[,1,]
   }
-  gama.atual = gama[,1,]
 
   lambda = array(data=0,dim=c(G, S, B))
 
@@ -146,115 +163,129 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
     cat("MCMC simulation ",k," of ",S,"\n")
 
-    eta = gama.atual - mu[k-1]
-    sumeta = sum(exp(eta))
+    gama = gama.atual - mu[k-1]
+    sumeta = sum(exp(gama)) #ERRO NO SUMETA: resultando em NaN e dando erro no ars
+
+    # Estimação do mu
+
     mu[k] = ars(1, muf, mufprima,
                 lb=T, xlb=-100, ub=T, xub=100,
-                sumeta=sumeta, vmu=vmu, ci_b=saida$n)
-    gama.atual = eta + mu[k]
+                sumeta=sumeta, vmu=vmu, ci_b=n)
+    gama.atual = gama + mu[k]
 
-    if(continuous == FALSE){
+    # Estimação do alfa
 
+    if(continuous != FALSE){
+
+      for(t in 1:dim(alfa)[1]){
+        temp = apply(Z,MAR=2,FUN=acomb,t)
+        n.alfa=sum(ci_b[,temp])
+        gama=gama.atual[,temp]-alfa[t,(k-1)]
+        sumeta.a=sum(exp(gama))
+        alfa[t,k] <- ars(1, muf,mufprima,lb=T,xlb=-100,ub=T,xub=100,sumeta=sumeta.a,vmu=valfa,ci_b=n.alfa)
+        gama.atual[,temp] = gama + alfa[t,k]
+      }
+    } else{
       for(t in 1:dim(alfa)[1]){
         # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
         ## it's accessing the wrong dimension of ci_b, it should be:
         n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
-        eta = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
-        sumeta.a = sum(exp(eta))
+        gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
+        sumeta.a = sum(exp(gama))
         alfa[t,k] <- ars(1, muf, mufprima,
                          lb=T, xlb=-100, ub=T, xub=100,
                          sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
-        gama.atual[,sub.a[[t]]] = eta + alfa[t,k]
-      }
-    } else{
-      for(t in 1:dim(alfa)[1]){
-        temp = apply(Z,MAR=2,FUN=acomb,t)
-        n.alfa=sum(ci_b[,temp])
-        eta=gama.atual[,temp]-alfa[t,(k-1)] #Usando gama.atual ao inves de eta.atual
-        sumeta.a=sum(exp(eta))
-        alfa[t,k] <- ars(1, muf,mufprima,lb=T,xlb=-100,ub=T,xub=100,sumeta=sumeta.a,vmu=valfa,ci_b=n.alfa)
-        gama.atual[,temp] = eta + alfa[t,k] #Usando gama.atual ao inves de eta.atual
+        gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
       }
     }
+
+    # Estimação theta
 
     # n.theta = apply(ci_b, MAR=2, FUN=sum) ## original code by Leticia
     ## it was returning object with wrong dimension, and causing errors in the 'ars' call bellow - I am assuming this should be sum(ci_b) by b=1,...,B
     n.theta = apply(ci_b, MAR=1, FUN=sum) ## changed by Thais (Feb/2022)
-    eta = gama.atual - theta[,(k-1)]
-    for(g in 1:saida$G){
-      sum.theta = sum(exp(eta[g,]))
+    gama = gama.atual - theta[,(k-1)]
+    for(g in 1:G){
+      sum.theta = sum(exp(gama[g,]))
       bar = W[g,]%*%theta.atual/ni[g]
       theta.atual[g] = ars(1, thetaf, thetafprima, ns=1000,
                            lb=T, xlb=-100, ub=T, xub=100, ci_b=n.theta[g],
                            sumeta=sum.theta, ni=ni[g],
                            tau.f=tau.theta[k-1], bar.f=bar)
     }
-    theta[,k] = theta.atual - sum(theta.atual)/saida$G
-    gama.atual = eta + theta[,k]
+    theta[,k] = theta.atual - sum(theta.atual)/G
+    gama.atual = gama + theta[,k]
 
-    if(continuous == FALSE){
+    # Estimação do phi - ATENÇÂO NO Z
+
+    if(continuous != FALSE){
+
+      for(t in 1:dim(phi)[3]){
+        temp = apply(Z,MAR=2,FUN=acomb,t)
+        n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
+        gama = gama.atual[,temp] - phi[,(k-1),t] #Usando gama.atual ao inves de eta.atual
+        for(g in 1:G){
+          sum.phi = sum(exp(gama[g,]))
+          bar = W[g,]%*%phi.atual[,t]/ni[g]
+          phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
+        }
+        ## Soma igual a zero
+        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
+        gama.atual[,temp] = gama + phi[,k,t] #Usando gama.atual ao inves de eta.atual
+      }
+    } else{
 
       for(t in 1:dim(phi)[3]){
         # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
         ## there is also a problem with the dimensions of ci_b
-        n.phi = apply(saida$ci_b[,sub.a[[t]]],MAR=1,FUN=sum) ## changed by Thais (Feb/2022)
-        eta = gama.atual[,sub.a[[t]]] - phi[,(k-1),t]
-        for(g in 1:saida$G){
-          sum.phi = sum(exp(eta[g,]))
+        n.phi = apply(ci_b[,sub.a[[t]]],MAR=1,FUN=sum) ## changed by Thais (Feb/2022)
+        gama = gama.atual[,sub.a[[t]]] - phi[,(k-1),t]
+        for(g in 1:G){
+          sum.phi = sum(exp(gama[g,]))
           bar = W[g,]%*%phi.atual[,t]/ni[g]
           phi.atual[g,t] = ars(1, thetaf, thetafprima, ns=1000,
                                lb=T, xlb=-100, ub=T, xub=100,
                                ci_b=n.phi[g], sumeta=sum.phi, ni=ni[g],
                                tau.f=tau.phi[t,(k-1)], bar.f=bar)
         }
-        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/saida$G
+        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
         # gama.atual[,sub.a[[k]]] = eta + phi[,k,t] ## original by Leticia
         ## seems like it was saving the updated gama in the wrong positions
         ## k is the simulations' index, should not be used to save gama!
-        gama.atual[,sub.a[[t]]] = eta + phi[,k,t] ## changed by Thais (Feb/22)
-      }
-    } else{
-      for(t in 1:dim(phi)[3]){
-        temp = apply(Z,MAR=2,FUN=acomb,t)
-        n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
-        eta = gama.atual[,temp] - phi[,(k-1),t] #Usando gama.atual ao inves de eta.atual
-        for(g in 1:G){
-          sum.phi = sum(exp(eta[g,]))
-          bar = W[g,]%*%phi.atual[,t]/ni[g]
-          phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
-        }
-        ## Soma igual a zero
-        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
-        gama.atual[,temp] = eta + phi[,k,t] #Usando gama.atual ao inves de eta.atual
+        gama.atual[,sub.a[[t]]] = gama + phi[,k,t] ## changed by Thais (Feb/22)
       }
     }
 
-    #Adding beta
-    eta = gama.atual - beta[,(k-1)]*z.pad #Usando gama.atual ao inves de eta.atual ######ERRO
-    c.f = apply(ci_b*z.pad,MAR=1,FUN=sum)
-    for(g in 1:G){
-      zib.vec = z.pad[g,]
-      u <- 0
-      u <- (MfU.Sample(x=logit(beta[g,k-1]),f=betaf,uni.sampler="slice",c.f=c.f[g],eta=eta[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
-      beta[g,k] = inv.logit(u)
+    #Adding beta - checar o uso do beta
+    if(continuous != FALSE){
+      gama = gama.atual - beta[,(k-1)]*z.pad #Usando gama.atual ao inves de eta.atual ######ERRO
+      c.f = apply(ci_b*z.pad,MAR=1,FUN=sum)
+      for(g in 1:G){
+        zib.vec = z.pad[g,]
+        u <- 0
+        u <- (MfU.Sample(x=logit(beta[g,k-1]),f=betaf,uni.sampler="slice",c.f=c.f[g],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
+        beta[g,k] = inv.logit(u)
+      }
+      if(spatial_beta == FALSE){
+        gama.atual = gama + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
+      } else{
+        beta[,k] = beta.atual - sum(beta.atual)/G
+        gama.atual = gama + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
+      }
     }
-    if(spatial_beta == FALSE){
-      gama.atual = eta + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
-    } else{
-      beta[,k] = beta.atual - sum(beta.atual)/G
-      gama.atual = eta + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
-    }
+
+    # Estimação epsilon
 
     for(g in 1:G){
       for(j in 1:B){
-        eta = gama.atual[g,j] - epsilon[g,1,j]
-        sum.aux = exp(eta)
+        gama = gama.atual[g,j] - epsilon[g,1,j]
+        sum.aux = exp(gama)
         epsilon[g,1,j] = ars(1, ef, efprima,
                              lb=T, xlb=-100, ub=T, xub=100,
                              #ci_b=ci_b[j,g], sumeta=sum.aux, ## original code by Leticia - dimensions were exchanges
                              ci_b=ci_b[g,j], sumeta=sum.aux, ## code changed by Thais (Feb/22)
                              tau.e=tau.e[k-1])
-        gama.atual[g,j] = eta + epsilon[g,1,j]
+        gama.atual[g,j] = gama + epsilon[g,1,j]
       }
     }
 
@@ -266,15 +297,15 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     }
 
     sum.theta = t(theta[,k])%*%(diag(ni)-W)%*%(theta[,k])
-    tau.theta[k] = rgamma(1,atheta+saida$n/2,rate=btheta+sum.theta/2)
+    tau.theta[k] = rgamma(1,atheta+n/2,rate=btheta+sum.theta/2) #Checar na fórmula a parte do n/2
 
     for(m in 1:dim(tau.phi)[1]){
       sum.phi = t(phi[,k,m])%*%(diag(ni)-W)%*%(phi[,k,m])
-      tau.phi[m,k] = rgamma(1,aphi+saida$G/2,rate=bphi+sum.phi/2)
+      tau.phi[m,k] = rgamma(1,aphi+G/2,rate=bphi+sum.phi/2) #Checar na fórmula a parte do (-1) subtraindo G/2
 
       ## atualizando tau.e
       sum.e = sum(epsilon^2)
-      tau.e[k] = rgamma(1,ae+(saida$G*saida$B)/2,rate=be+sum.e/2)
+      tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2) #Checar na fórmula a parte do (-1) subtraindo (G*B)/2
     }
 
     # what if we want to return the entire lambda?? CHECK SIZE! - Thais
