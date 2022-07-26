@@ -119,23 +119,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   #  }
   #}
 
-  #gama = array(data=0, dim=c(G, 1, B))   ### Precisa atualizar
-  if(continuous != FALSE){
-    gama = array(data=0, dim=c(G, vZ, B))
-    for(k in 1:vZ){
-      for(i in b){
-        for(j in 1:G){
-          if(length(ind.a[[i]])==0){
-            gama[j,k,i] = mu[1] + theta[i] + beta[j,1,k]%*%z.pad[j,i,k] + epsilon[,1,i]
-          } else{
-            gama[j,k,i] = mu[1] + + sum(alfa[ind.a[[i]],1]) + theta[i] + beta[j,1,k]%*%z.pad[j,i,k] + sum(phi[,1,ind.a[[i]]]) + epsilon[,1,i]
-          }
-        }
-      }
-    }
-    gama.atual = gama
-  } else{
-    gama = array(data=0, dim=c(G, 1, B))
+  gama = array(data=0, dim=c(G, ifelse(continuous != FALSE, vZ, 1), B))
     for(i in b){
       if(length(ind.a[[i]])==0){
         gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
@@ -146,11 +130,16 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                              apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
                              phi[,1,ind.a[[i]]]) + epsilon[,1,i]
       }
+      if(continuous != FALSE){
+        gama[,1,i] = gama[,1,i] + ifelse(vZ > 1,
+                                         apply(beta[,1,]*z.pad[,i,], MAR=1, FUN=sum),
+                                         beta[,1,]*z.pad[,i,])
+      }
     }
-    gama.atual = gama[,1,]
-  }
+  gama.atual = gama[,1,] #Última coluna ficando com NaN no caso continuo
 
   lambda = array(data=0,dim=c(G, S, B))
+  lambda[,1,] = exp(gama)
 
   media.lambda = matrix(0, G, B)
 
@@ -178,7 +167,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     if(continuous != FALSE){
 
       for(t in 1:dim(alfa)[1]){
-        temp = apply(Z,MAR=2,FUN=acomb,t)
+        temp = apply(Z,MAR=2,FUN=acomb,t) #Checar se realmente o interesse é na transposta de Z
         n.alfa=sum(ci_b[,temp])
         gama=gama.atual[,temp]-alfa[t,(k-1)]
         sumeta.a=sum(exp(gama))
@@ -221,9 +210,9 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     if(continuous != FALSE){
 
       for(t in 1:dim(phi)[3]){
-        temp = apply(Z,MAR=2,FUN=acomb,t)
+        temp = apply(Z,MAR=2,FUN=acomb,t) #Checar se realmente o interesse é na transposta de Z
         n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
-        gama = gama.atual[,temp] - phi[,(k-1),t] #Usando gama.atual ao inves de eta.atual
+        gama = gama.atual[,temp] - phi[,(k-1),t]
         for(g in 1:G){
           sum.phi = sum(exp(gama[g,]))
           bar = W[g,]%*%phi.atual[,t]/ni[g]
@@ -231,7 +220,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
         }
         ## Soma igual a zero
         phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
-        gama.atual[,temp] = gama + phi[,k,t] #Usando gama.atual ao inves de eta.atual
+        gama.atual[,temp] = gama + phi[,k,t]
       }
     } else{
 
@@ -258,19 +247,22 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
     #Adding beta - checar o uso do beta
     if(continuous != FALSE){
-      gama = gama.atual - beta[,(k-1)]*z.pad #Usando gama.atual ao inves de eta.atual ######ERRO
-      c.f = apply(ci_b*z.pad,MAR=1,FUN=sum)
+      #gama = gama.atual - beta[,(k-1)]*z.pad   <----  ANTES NO DELA
+      gama = gama.atual - ifelse(vZ > 1,
+                                  apply(beta[,(k-1),]*z.pad[,1,], MAR=1, FUN=sum),
+                                   beta[,(k-1),]*z.pad[,1,])     #ALTEREI
+      c.f = apply(ci_b*z.pad,MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD
       for(g in 1:G){
-        zib.vec = z.pad[g,]
+        zib.vec = z.pad[g,] #CHECAR DIMENSÃO DO Z.PAD
         u <- 0
         u <- (MfU.Sample(x=logit(beta[g,k-1]),f=betaf,uni.sampler="slice",c.f=c.f[g],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
-        beta[g,k] = inv.logit(u)
+        beta[g,k] = inv.logit(u) #CHECAR DIMENSÃO DO BETA
       }
       if(spatial_beta == FALSE){
-        gama.atual = gama + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
+        gama.atual = gama + beta[,k]*z.pad
       } else{
         beta[,k] = beta.atual - sum(beta.atual)/G
-        gama.atual = gama + beta[,k]*z.pad #Usando gama.atual ao inves de eta.atual
+        gama.atual = gama + beta[,k]*z.pad
       }
     }
 
@@ -297,15 +289,20 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     }
 
     sum.theta = t(theta[,k])%*%(diag(ni)-W)%*%(theta[,k])
-    tau.theta[k] = rgamma(1,atheta+n/2,rate=btheta+sum.theta/2) #Checar na fórmula a parte do n/2
+    tau.theta[k] = rgamma(1,atheta+n/2,rate=btheta+sum.theta/2)
 
     for(m in 1:dim(tau.phi)[1]){
       sum.phi = t(phi[,k,m])%*%(diag(ni)-W)%*%(phi[,k,m])
-      tau.phi[m,k] = rgamma(1,aphi+G/2,rate=bphi+sum.phi/2) #Checar na fórmula a parte do (-1) subtraindo G/2
+      tau.phi[m,k] = rgamma(1,aphi+G/2,rate=bphi+sum.phi/2)
 
       ## atualizando tau.e
       sum.e = sum(epsilon^2)
-      tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2) #Checar na fórmula a parte do (-1) subtraindo (G*B)/2
+      tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
+    }
+
+    if(continuos != FALSE){
+      sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
+      tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
     }
 
     # what if we want to return the entire lambda?? CHECK SIZE! - Thais
