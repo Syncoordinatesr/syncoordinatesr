@@ -10,7 +10,7 @@
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
 #' @param   grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
-#' @param   continuous A condition if the dataset contains or not continuous variables
+#' @param   continuous  An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)
 #'
 #' @return  A list containing useful objects to the mcmc function.
 #'
@@ -20,19 +20,23 @@
 #'
 #' @import spdep
 
-#### Escrever o help do continuous direito e com o que te, que receber, colocar observação no help do pacote que para mais de uma variavel continua não foi implementado ainda
 prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
-  # Fazer um tratamento melhor dos erros
   if (!is.data.frame(dataset))
     stop("The dataset must be an object of 'data.frame' class")
   if (!(nrow(dataset) == nrow(coord)))
     stop("Both objects: 'dataset' and 'coord' must have the same numer of lines (elements)")
   #if (!(integer(grid))) stop("The grid should be an integer value")
+  if (continuous == TRUE)
+    stop("The continuous object must indicates which columns in the dataset correspond to continuous variables")
+
 
   n = dim(dataset)[1]
+  n_coord = dim(coord)[1]
+  if(n != n_coord)
+    stop("Both objects 'dataset' and 'coord' must have the same amount of elements")
 
-  #######  NEW  #######
+
   if(continuous != FALSE){
 
     vZ = length(continuous)
@@ -47,7 +51,6 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
       dataset = dataset[, -col_Z]
     }
   }
-  #########  END  #########
 
   p = dim(dataset)[2]
 
@@ -74,17 +77,17 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
 
   G = grid*grid
 
-  # Pegando os limites inferiores e superiores da latitude e longitude
+  # Lower and upper limits of latitude and longitude
   xmax = max(coord[,1])
   xmin = min(coord[,1])
   ymax = max(coord[,2])
   ymin = min(coord[,2])
 
-  # Dividindo em espaços homogêneos de acordo com o 'grid'
+  # Dividing in equal spaces according to the 'grid' value
   dxvec = (xmax-xmin)/grid
   dyvec = (ymax-ymin)/grid
 
-  # Criando os vetores de latitude e longitude partidas, e criando as células
+  # Vectors of latitude and longitude divided
   lonvec = seq(xmin,xmax,dxvec)
   latvec = seq(ymin,ymax,dyvec)
   xlon = findInterval(coord[,1], lonvec, all.inside = T)
@@ -119,12 +122,12 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     ci_b[c[i,1],c[i,2]] = ci_b[c[i,1],c[i,2]] + 1
   }
 
-  # Criando o fator de influência em células vizinhas
+  # The influence factor in neighboring cells
   neigh = cell2nb((grid),(grid), type="queen")
   ni = card(neigh)
   W = nb2mat(neigh, style="B")
 
-  # list of the elements in alpha used in each combination
+  # List of the elements in alpha used in each combination
   ind.a = list(1); ind.a = c(ind.a,2:B)
   for(i in b){
     ind.a[[i]] = numeric(0)
@@ -150,7 +153,7 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     }
   }
 
-  #######  NEW  #######
+
   if(continuous != FALSE){
 
     z.bar = z.pad = array(NA, c(G, B, vZ))
@@ -158,7 +161,9 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
     for(d in 1:vZ){
       for(i in 1:G){
         for(j in 1:B){
-            z.bar[i, j, d] = mean(Z[cel == i & comb == j, d], na.rm = TRUE)
+            z.bar[i, j, d] = ifelse(sum(cel == i & comb == j) == 0,
+                                    NA,
+                                    mean(Z[cel == i & comb == j, d], na.rm = TRUE))
         }
       }
     }
@@ -169,11 +174,11 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
       }
     }
   }
-  #######  END  #######
+
   if(continuous != FALSE){
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,
-                ind.a=ind.a, sub.a=sub.a, W=W, Z=Z, vZ=vZ, z.pad=z.pad)) # Z adicionado na saída
+                ind.a=ind.a, sub.a=sub.a, W=W, Z=Z, vZ=vZ, z.pad=z.pad))
   } else{
     return(list(n=n, p=p, vx=vx, nx=nx, B=B, b=b, G=G,
                 latvec=latvec, lonvec=lonvec, comb=comb, ci_b=ci_b, ni=ni,

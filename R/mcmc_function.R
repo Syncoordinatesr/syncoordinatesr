@@ -13,7 +13,7 @@
 #' @param  spatial_beta  Option so you can choose to use a spatial beta parameter
 #' @param  return_paramenters  Option to return the result of the parameters. With default not returning the parameters
 #'
-#' @return  Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter, or all other significant parameters too.
+#' @return  Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter or all other significant parameters too.
 #'
 #' @references
 #' NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
@@ -37,13 +37,13 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     saida = prepare_data(dataset, coord, grid)
   }
 
-  # assigning the elements of the output to new objects
+  # Assigning the elements of the output to new objects
 
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
 
-  acomb = function(x,i) i %in% x #Added
+  acomb = function(x,i) i %in% x
 
-  # Inicializando os parâmetros
+  # Initializing the parameters
 
   alfa = matrix(0, sum(nx - 1), S)
   alfa[,1] = 0
@@ -54,10 +54,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   # Adding beta
   if(continuous != FALSE){
     beta = array(NA, c(G, S, vZ))
-    beta[,1,] = 0
+    beta[,1,] = 1
     beta.atual = beta[,1,]
-    #beta[,1] = 0
-    #beta.atual = beta[,1]
   }
 
   theta = matrix(0, G, S)
@@ -84,7 +82,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.e = numeric(S)
   tau.e[1] = 1
 
-  # Hyperparameters (no futuro tornar possível para o usuário alterar)
+  # Hyperparameters (soon make it possible for the user to change it)
 
   atheta = abeta = 0.1
   btheta = bbeta = 0.1
@@ -98,7 +96,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   #eta = array(NA, c(G, B, vZ))
   #eta.atual = array(NA, c(G, B, vZ))
 
-  # Preditor linear - Ainda em alteração \\\
+  # Linear predictor
 
   #if(continuous != FALSE){
   #  for(k in 1:lenght(continuous)){
@@ -119,7 +117,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   #  }
   #}
 
-  gama = array(data=0, dim=c(G, ifelse(continuous != FALSE, vZ, 1), B))
+  #gama = array(data=0, dim=c(G, ifelse(continuous != FALSE, vZ, 1), B))
+  gama = array(data=0, dim=c(G, 1, B))
     for(i in b){
       if(length(ind.a[[i]])==0){
         gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
@@ -132,11 +131,11 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       }
       if(continuous != FALSE){
         gama[,1,i] = gama[,1,i] + ifelse(vZ > 1,
-                                         apply(beta[,1,]*z.pad[,i,], MAR=1, FUN=sum),
-                                         beta[,1,]*z.pad[,i,])
+                                         apply(beta[,1,]*z.pad[,i,], MAR=1, FUN=sum, na.rm = TRUE),
+                                         ifelse(is.na(beta[,1,]*z.pad[,i,]), 0, beta[,1,]*z.pad[,i,]))
       }
     }
-  gama.atual = gama[,1,] #Última coluna ficando com NaN no caso continuo
+  gama.atual = gama[,1,]
 
   lambda = array(data=0,dim=c(G, S, B))
   lambda[,1,] = exp(gama)
@@ -144,7 +143,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   media.lambda = matrix(0, G, B)
 
   ##########################
-  # começo real do mcmc
+  # Start of the mcmc
 
   controle=MfU.Control(n=1,slice.w=.01,slice.m=10000,slice.lower=0,slice.upper=1)
 
@@ -153,16 +152,16 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     cat("MCMC simulation ",k," of ",S,"\n")
 
     gama = gama.atual - mu[k-1]
-    sumeta = sum(exp(gama)) #ERRO NO SUMETA: resultando em NaN e dando erro no ars
+    sumeta = sum(exp(gama))
 
-    # Estimação do mu
+    # Estimation of mu
 
     mu[k] = ars(1, muf, mufprima,
                 lb=T, xlb=-100, ub=T, xub=100,
                 sumeta=sumeta, vmu=vmu, ci_b=n)
     gama.atual = gama + mu[k]
 
-    # Estimação do alfa
+    # Estimation of alfa
 
     if(continuous != FALSE){
 
@@ -188,7 +187,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       }
     }
 
-    # Estimação theta
+    # Estimation of theta
 
     # n.theta = apply(ci_b, MAR=2, FUN=sum) ## original code by Leticia
     ## it was returning object with wrong dimension, and causing errors in the 'ars' call bellow - I am assuming this should be sum(ci_b) by b=1,...,B
@@ -205,12 +204,12 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     theta[,k] = theta.atual - sum(theta.atual)/G
     gama.atual = gama + theta[,k]
 
-    # Estimação do phi - ATENÇÂO NO Z
+    # Estimation of phi - ATTENTION TO Z
 
     if(continuous != FALSE){
 
       for(t in 1:dim(phi)[3]){
-        temp = apply(Z,MAR=2,FUN=acomb,t) #Checar se realmente o interesse é na transposta de Z
+        temp = apply(Z,MAR=2,FUN=acomb,t)
         n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
         gama = gama.atual[,temp] - phi[,(k-1),t]
         for(g in 1:G){
@@ -218,7 +217,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
           bar = W[g,]%*%phi.atual[,t]/ni[g]
           phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
         }
-        ## Soma igual a zero
+        ## Sum equal to zero
         phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
         gama.atual[,temp] = gama + phi[,k,t]
       }
@@ -245,7 +244,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       }
     }
 
-    #Adding beta - checar o uso do beta
+    #Adding beta - check it
     if(continuous != FALSE){
       #gama = gama.atual - beta[,(k-1)]*z.pad   <----  ANTES NO DELA
       gama = gama.atual - ifelse(vZ > 1,
@@ -266,7 +265,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       }
     }
 
-    # Estimação epsilon
+    # Estimation of epsilon
 
     for(g in 1:G){
       for(j in 1:B){
@@ -295,7 +294,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       sum.phi = t(phi[,k,m])%*%(diag(ni)-W)%*%(phi[,k,m])
       tau.phi[m,k] = rgamma(1,aphi+G/2,rate=bphi+sum.phi/2)
 
-      ## atualizando tau.e
+      ## Update of tau.e
       sum.e = sum(epsilon^2)
       tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
     }
