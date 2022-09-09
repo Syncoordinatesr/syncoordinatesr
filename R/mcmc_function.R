@@ -147,7 +147,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   controle=MfU.Control(n=1,slice.w=.01,slice.m=10000,slice.lower=0,slice.upper=1)
 
-  for (k in 2:S){
+  for (k in 2:S){ #Traduzir pro nimble
 
     cat("MCMC simulation ",k," of ",S,"\n")
 
@@ -204,7 +204,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     theta[,k] = theta.atual - sum(theta.atual)/G
     gama.atual = gama + theta[,k]
 
-    # Estimation of phi - ATTENTION TO Z
+    # Estimation of phi - ATTENTION TO Z - Checar o que é o temp
 
     if(continuous != FALSE){
 
@@ -244,24 +244,30 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       }
     }
 
+    ################################################################################################################################################
     #Adding beta - check it
     if(continuous != FALSE){
       #gama = gama.atual - beta[,(k-1)]*z.pad   <----  ANTES NO DELA
-      gama = gama.atual - ifelse(vZ > 1,
-                                  apply(beta[,(k-1),]*z.pad[,1,], MAR=1, FUN=sum),
-                                   beta[,(k-1),]*z.pad[,1,])     #ALTEREI
-      c.f = apply(ci_b*z.pad,MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD
-      for(g in 1:G){
-        zib.vec = z.pad[g,] #CHECAR DIMENSÃO DO Z.PAD
-        u <- 0
-        u <- (MfU.Sample(x=logit(beta[g,k-1]),f=betaf,uni.sampler="slice",c.f=c.f[g],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
-        beta[g,k] = inv.logit(u) #CHECAR DIMENSÃO DO BETA
-      }
-      if(spatial_beta == FALSE){
-        gama.atual = gama + beta[,k]*z.pad
-      } else{
-        beta[,k] = beta.atual - sum(beta.atual)/G
-        gama.atual = gama + beta[,k]*z.pad
+      for(i in 1:vZ){
+
+        gama = gama.atual - ifelse(vZ > 1,
+                                    apply(beta[,(k-1),]*z.pad[,1,], MAR=1, FUN=sum),
+                                     beta[,(k-1),]*z.pad[,1,])
+
+        c.f = array(NA, c(G, B, vZ))
+        c.f[,,i] = apply(ci_b*z.pad[,,i],MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD - FAZER UM LOOP PARA QUANTOS Z TIVER - cib sempre o mesmo inedependente do z
+        for(g in 1:G){
+          zib.vec = z.pad[g,,i] #CHECAR DIMENSÃO DO Z.PAD
+          u <- 0
+          u <- (MfU.Sample(x=logit(beta[g,k-1,i]),f=betaf,uni.sampler="slice",c.f=c.f[g+((i-1)*(G*B))],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle)) #ANTES c.f=c.f[g]
+          beta[g,k,i] = inv.logit(u) #CHECAR DIMENSÃO DO BETA - aumentar
+        }
+        #if(spatial_beta == FALSE){
+        #  gama.atual = gama + beta[,k]*z.pad
+        #} else{
+        #  beta[,k] = beta.atual - sum(beta.atual)/G
+        #  gama.atual = gama + beta[,k]*z.pad
+        #}
       }
     }
 
@@ -293,13 +299,13 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     for(m in 1:dim(tau.phi)[1]){
       sum.phi = t(phi[,k,m])%*%(diag(ni)-W)%*%(phi[,k,m])
       tau.phi[m,k] = rgamma(1,aphi+G/2,rate=bphi+sum.phi/2)
-
-      ## Update of tau.e
-      sum.e = sum(epsilon^2)
-      tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
     }
 
-    if(continuos != FALSE){
+    ## Update of tau.e
+    sum.e = sum(epsilon^2)
+    tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
+
+    if(continuous != FALSE){
       sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
       tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
     }
@@ -307,7 +313,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     # what if we want to return the entire lambda?? CHECK SIZE! - Thais
     lambda[,k,] = exp(gama.atual)
 
-  }
+  } #mcmc end
 
   if (return_parameters == FALSE){
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda))
@@ -316,5 +322,4 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda,
                 alfa=alfa, mu=mu, theta=theta, tau.theta=tau.theta, phi=phi, tau.phi=tau.phi, epsilon=epsilon, tau.e=tau.e))
   }
-
 }
