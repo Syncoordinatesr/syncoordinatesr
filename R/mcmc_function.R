@@ -162,30 +162,29 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     gama.atual = gama + mu[k]
 
     # Estimation of alfa
+    #if(continuous != FALSE){
 
-    if(continuous != FALSE){
-
+    #  for(t in 1:dim(alfa)[1]){
+    #    temp = apply(Z,MAR=2,FUN=acomb,t) #Checar se realmente o interesse é na transposta de Z
+    #    n.alfa=sum(ci_b[,temp])
+    #    gama=gama.atual[,temp]-alfa[t,(k-1)]
+    #    sumeta.a=sum(exp(gama))
+    #    alfa[t,k] <- ars(1, muf,mufprima,lb=T,xlb=-100,ub=T,xub=100,sumeta=sumeta.a,vmu=valfa,ci_b=n.alfa)
+    #    gama.atual[,temp] = gama + alfa[t,k]
+    #  }
+    #} else{
       for(t in 1:dim(alfa)[1]){
-        temp = apply(Z,MAR=2,FUN=acomb,t) #Checar se realmente o interesse é na transposta de Z
-        n.alfa=sum(ci_b[,temp])
-        gama=gama.atual[,temp]-alfa[t,(k-1)]
-        sumeta.a=sum(exp(gama))
-        alfa[t,k] <- ars(1, muf,mufprima,lb=T,xlb=-100,ub=T,xub=100,sumeta=sumeta.a,vmu=valfa,ci_b=n.alfa)
-        gama.atual[,temp] = gama + alfa[t,k]
+          # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
+          ## it's accessing the wrong dimension of ci_b, it should be:
+          n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
+          gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
+          sumeta.a = sum(exp(gama))
+          alfa[t,k] <- ars(1, muf, mufprima,
+                           lb=T, xlb=-100, ub=T, xub=100,
+                           sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
+          gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
       }
-    } else{
-      for(t in 1:dim(alfa)[1]){
-        # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
-        ## it's accessing the wrong dimension of ci_b, it should be:
-        n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
-        gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
-        sumeta.a = sum(exp(gama))
-        alfa[t,k] <- ars(1, muf, mufprima,
-                         lb=T, xlb=-100, ub=T, xub=100,
-                         sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
-        gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
-      }
-    }
+    #}
 
     # Estimation of theta
 
@@ -204,24 +203,24 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     theta[,k] = theta.atual - sum(theta.atual)/G
     gama.atual = gama + theta[,k]
 
-    # Estimation of phi - ATTENTION TO Z - Checar o que é o temp
+    # Estimation of phi - ATTENTION TO Z - Desnecessário a parte do contínuo separado
 
-    if(continuous != FALSE){
+    #if(continuous != FALSE){
 
-      for(t in 1:dim(phi)[3]){
-        temp = apply(Z,MAR=2,FUN=acomb,t)
-        n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
-        gama = gama.atual[,temp] - phi[,(k-1),t]
-        for(g in 1:G){
-          sum.phi = sum(exp(gama[g,]))
-          bar = W[g,]%*%phi.atual[,t]/ni[g]
-          phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
-        }
+    #  for(t in 1:dim(phi)[3]){
+    #    temp = apply(Z,MAR=2,FUN=acomb,t)   #Z
+    #    n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
+    #    gama = gama.atual[,temp] - phi[,(k-1),t]
+    #    for(g in 1:G){
+    #    sum.phi = sum(exp(gama[g,]))
+    #    bar = W[g,]%*%phi.atual[,t]/ni[g]
+    #    phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
+    #  }
         ## Sum equal to zero
-        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
-        gama.atual[,temp] = gama + phi[,k,t]
-      }
-    } else{
+    #   phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
+    #   gama.atual[,temp] = gama + phi[,k,t]
+    #  }
+    #} else{
 
       for(t in 1:dim(phi)[3]){
         # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
@@ -242,10 +241,10 @@ syn_mcmc <- function(dataset, coord, grid = 10,
         ## k is the simulations' index, should not be used to save gama!
         gama.atual[,sub.a[[t]]] = gama + phi[,k,t] ## changed by Thais (Feb/22)
       }
-    }
+    #}
 
-    ################################################################################################################################################
-    #Adding beta - check it
+    #############################################################
+    #Adding beta - check it - fazer linha por linha para checar essa parte
     if(continuous != FALSE){
       #gama = gama.atual - beta[,(k-1)]*z.pad   <----  ANTES NO DELA
       for(i in 1:vZ){
@@ -255,12 +254,14 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                                      beta[,(k-1),]*z.pad[,1,])
 
         c.f = array(NA, c(G, B, vZ))
-        c.f[,,i] = apply(ci_b*z.pad[,,i],MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD - FAZER UM LOOP PARA QUANTOS Z TIVER - cib sempre o mesmo inedependente do z
+        c.f[,,i] = apply(ci_b*z.pad[,,i],MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD
         for(g in 1:G){
-          zib.vec = z.pad[g,,i] #CHECAR DIMENSÃO DO Z.PAD
+          zib.vec = z.pad[g,,i]
           u <- 0
-          u <- (MfU.Sample(x=logit(beta[g,k-1,i]),f=betaf,uni.sampler="slice",c.f=c.f[g+((i-1)*(G*B))],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle)) #ANTES c.f=c.f[g]
-          beta[g,k,i] = inv.logit(u) #CHECAR DIMENSÃO DO BETA - aumentar
+          #ERRO: unused arguments (gama = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA), vbeta = 5)
+          u <- (MfU.Sample(x=logit(beta[g,k-1,i]),f=betaf,uni.sampler="slice",c.f=c.f[g+((i-1)*(G*B))],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
+          #Antes  c.f = c.f[g]
+          beta[g,(k-1),i] = inv.logit(u) #CHECAR DIMENSÃO DO BETA
         }
         #if(spatial_beta == FALSE){
         #  gama.atual = gama + beta[,k]*z.pad
@@ -306,8 +307,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
 
     if(continuous != FALSE){
-      sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
-      tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
+      sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,]) #Checar dimensões
+      tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2) #Checar dimensões
     }
 
     # what if we want to return the entire lambda?? CHECK SIZE! - Thais
