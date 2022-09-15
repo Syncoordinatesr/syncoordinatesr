@@ -250,18 +250,25 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       for(i in 1:vZ){
 
         gama = gama.atual - ifelse(vZ > 1,
-                                    apply(beta[,(k-1),]*z.pad[,1,], MAR=1, FUN=sum),
-                                     beta[,(k-1),]*z.pad[,1,])
+                                   apply(beta[,(k-1),]*z.pad[,1,], MAR=1, FUN=sum),
+                                   beta[,(k-1),]*z.pad[,1,])
 
-        c.f = array(NA, c(G, B, vZ))
-        c.f[,,i] = apply(ci_b*z.pad[,,i],MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD
+        c.f = matrix(NA, G, vZ)
+        c.f[,i] = apply(ci_b*z.pad[,,i],MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD
         for(g in 1:G){
           zib.vec = z.pad[g,,i]
           u <- 0
           #ERRO: unused arguments (gama = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA), vbeta = 5)
-          u <- (MfU.Sample(x=logit(beta[g,k-1,i]),f=betaf,uni.sampler="slice",c.f=c.f[g+((i-1)*(G*B))],gama=gama[g,],vbeta=vbeta,zib.vec=zib.vec,control=controle))
+          u <- (MfU.Sample(x=logit(beta[g, (k-1), i]),
+                           f=betaf,
+                           uni.sampler="slice",
+                           c.f=c.f[g, i],
+                           gama=gama[g,1,],
+                           vbeta=vbeta,
+                           zib.vec=zib.vec,
+                           control=controle))
           #Antes  c.f = c.f[g]
-          beta[g,(k-1),i] = inv.logit(u) #CHECAR DIMENSÃO DO BETA
+          beta[g, (k-1), i] = inv.logit(u) #CHECAR DIMENSÃO DO BETA
         }
         #if(spatial_beta == FALSE){
         #  gama.atual = gama + beta[,k]*z.pad
