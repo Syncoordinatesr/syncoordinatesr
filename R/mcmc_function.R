@@ -31,6 +31,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                           continuous = FALSE, spatial_beta = FALSE,
                           return_parameters = FALSE){
 
+  #ALTERAR O HELP DO SPATIAL_BETA
+
   if(continuous != FALSE){
     saida = prepare_data(dataset, coord, grid, continuous)
   } else{
@@ -246,7 +248,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     #############################################################
     #Adding beta - check it - fazer linha por linha para checar essa parte
     if(continuous != FALSE){
-      #gama = gama.atual - beta[,(k-1)]*z.pad   <----  ANTES NO DELA
+
       for(i in 1:vZ){
 
         gama = gama.atual - ifelse(vZ > 1,
@@ -254,22 +256,47 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                                    beta[,(k-1),]*z.pad[,1,])
 
         c.f = matrix(NA, G, vZ)
-        c.f[,i] = apply(ci_b*z.pad[,,i],MAR=1,FUN=sum) #CHECAR DIMENSÃO DO Z.PAD
-        for(g in 1:G){
-          zib.vec = z.pad[g,,i]
-          u <- 0
-          #ERRO: unused arguments (gama = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA), vbeta = 5)
-          u <- (MfU.Sample(x=logit(beta[g, (k-1), i]),
-                           f=betaf,
-                           uni.sampler="slice",
-                           c.f=c.f[g, i],
-                           gama=gama[g,1,],
-                           vbeta=vbeta,
-                           zib.vec=zib.vec,
-                           control=controle))
-          #Antes  c.f = c.f[g]
-          beta[g, (k-1), i] = inv.logit(u) #CHECAR DIMENSÃO DO BETA
+        c.f[, i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum)
+
+        if(spatial_beta != FALSE){
+
+          for(g in 1:G){
+
+            zib.vec = z.pad[g, ,i]
+            bar = W[g, ] %*% beta.atual/ni[g]
+            u <- 0
+
+            u <- (MfU.Sample(x = logit(beta[g, (k-1), i]),
+                             f = betaf,
+                             uni.sampler = "slice",
+                             c.f = c.f[g, i],
+                             zib.vec = zib.vec,
+                             eta = gama[g, ],     #dando erro com gama[g, 1, ]
+                             ni = ni[g],
+                             tau.beta = tau.beta[(k-1)],
+                             bar.f = bar,
+                             control = controle))
+         }
+        } else{
+          #Checar como fica a situação quando o usuário escolher determinados betas
+          for(g in 1:G){
+
+            zib.vec = z.pad[g, ,i]
+            u <- 0
+
+            u <- (MfU.Sample(x = logit(beta[g, (k-1), i]),
+                             f = betaf,
+                             uni.sampler = "slice",
+                             c.f = c.f[g, i],
+                             zib.vec = zib.vec,
+                             eta = gama[g, ],     #dando erro com gama[g, 1, ]
+                             vbeta = vbeta,
+                             control = controle))
+          }
         }
+
+    beta[g, (k-1), i] = inv.logit(u)
+
         #if(spatial_beta == FALSE){
         #  gama.atual = gama + beta[,k]*z.pad
         #} else{
