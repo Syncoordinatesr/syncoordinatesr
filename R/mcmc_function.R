@@ -8,9 +8,9 @@
 #'
 #' @param  dataset   A data frame with all the information except the coordinates
 #' @param  S   Quantities of simulations that will be made. With a default result of (S = 5000)
-#' @param  burn   The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)
-#' @param  continuous  Option so the user can warn the function for the presence of continuous variables in the dataset. With default considering only discrete variables
-#' @param  spatial_beta  Option so you can choose to use a spatial beta parameter
+#' @param  burn   The number of simulations that will be burned to warm-up the \code{mcmc}. With a default result of (\code{burn} = 1000)
+#' @param  continuous  Option so the user can warn the function for the presence of continuous variables in the dataset. You must indicate the columns numbers that contain continuous variables in a vector
+#' @param  spatial_beta  Option so the user can choose to use a spatial \code{beta} parameter. You must input a vector containing which \code{beta} you want to add the spatiality. If you want to select all beta, you can use the logical argument TRUE
 #' @param  return_paramenters  Option to return the result of the parameters. With default not returning the parameters
 #'
 #' @return  Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter or all other significant parameters too.
@@ -31,7 +31,6 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                           continuous = FALSE, spatial_beta = FALSE,
                           return_parameters = FALSE){
 
-  #ALTERAR O HELP DO SPATIAL_BETA
 
   if(continuous != FALSE){
     saida = prepare_data(dataset, coord, grid, continuous)
@@ -205,10 +204,9 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     theta[,k] = theta.atual - sum(theta.atual)/G
     gama.atual = gama + theta[,k]
 
-    # Estimation of phi - ATTENTION TO Z - Desnecessário a parte do contínuo separado
+    # Estimation of phi
 
     #if(continuous != FALSE){
-
     #  for(t in 1:dim(phi)[3]){
     #    temp = apply(Z,MAR=2,FUN=acomb,t)   #Z
     #    n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
@@ -245,8 +243,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       }
     #}
 
-    #############################################################
-    #Adding beta - check it - fazer linha por linha para checar essa parte
+    ######################## Checar sobre os diferentes funções para betaf contidas no pacote
+    #Estimation of beta - check it
     if(continuous != FALSE){
 
       for(i in 1:vZ){
@@ -262,16 +260,16 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
           for(g in 1:G){
 
-            zib.vec = z.pad[g, ,i]
+            zib.vec = z.pad[g,,i]
             bar = W[g, ] %*% beta.atual/ni[g]
             u <- 0
-
+            ####### Error in if (g(L) <= logy) break : missing value where TRUE/FALSE needed ########
             u <- (MfU.Sample(x = logit(beta[g, (k-1), i]),
                              f = betaf,
                              uni.sampler = "slice",
                              c.f = c.f[g, i],
                              zib.vec = zib.vec,
-                             eta = gama[g, ],     #dando erro com gama[g, 1, ]
+                             eta = gama[g,],     #dando erro com gama[g,1,]
                              ni = ni[g],
                              tau.beta = tau.beta[(k-1)],
                              bar.f = bar,
@@ -283,13 +281,13 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
             zib.vec = z.pad[g, ,i]
             u <- 0
-
+            ####### Error in if (g(L) <= logy) break : missing value where TRUE/FALSE needed ########
             u <- (MfU.Sample(x = logit(beta[g, (k-1), i]),
                              f = betaf,
                              uni.sampler = "slice",
-                             c.f = c.f[g, i],
+                             c.f = c.f[g,i],
                              zib.vec = zib.vec,
-                             eta = gama[g, ],     #dando erro com gama[g, 1, ]
+                             eta = gama[g,],     #dando erro com gama[g, 1, ]
                              vbeta = vbeta,
                              control = controle))
           }
