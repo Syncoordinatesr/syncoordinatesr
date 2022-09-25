@@ -249,12 +249,10 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
       for(i in 1:vZ){
 
-        gama = gama.atual - ifelse(vZ > 1,
-                                   apply(beta[,(k-1),]*z.pad[,1,], MAR=1, FUN=sum),
-                                   beta[,(k-1),]*z.pad[,1,])
+        gama = gama.atual - beta[,(k-1),i]*z.pad[,,i]
 
         c.f = matrix(NA, G, vZ)
-        c.f[, i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum)
+        c.f[,i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum)
 
         if(spatial_beta != FALSE){
 
@@ -265,15 +263,18 @@ syn_mcmc <- function(dataset, coord, grid = 10,
             u <- 0
             ####### Error in if (g(L) <= logy) break : missing value where TRUE/FALSE needed ########
             u <- (MfU.Sample(x = logit(beta[g, (k-1), i]),
-                             f = betaf,
+                             f = betaf_ICAR,
                              uni.sampler = "slice",
-                             c.f = c.f[g, i],
+                             c.f = c.f[g,i],
                              zib.vec = zib.vec,
                              eta = gama[g,],     #dando erro com gama[g,1,]
                              ni = ni[g],
                              tau.beta = tau.beta[(k-1)],
                              bar.f = bar,
                              control = controle))
+
+            #Antes beta[g,(k-1),i] = inv.logit(u)
+            beta[g,k,i] = inv.logit(u)
          }
         } else{
           #Checar como fica a situação quando o usuário escolher determinados betas
@@ -287,16 +288,27 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                              uni.sampler = "slice",
                              c.f = c.f[g,i],
                              zib.vec = zib.vec,
-                             eta = gama[g,],     #dando erro com gama[g, 1, ]
+                             eta = gama[g,],     #dando erro com gama[g,1,]
                              vbeta = vbeta,
                              control = controle))
+
+            #Antes beta[g,(k-1),i] = inv.logit(u)
+            beta[g,k,i] = inv.logit(u)
           }
         }
 
-    beta[g, (k-1), i] = inv.logit(u)
+        if(spatial_beta != FALSE){
+          beta[,k,i] = beta.atual - sum(beta.atual)/G
+          gama.atual = gama + beta[,k,i]*z.pad[,,i]
+        } else{
+          gama.atual = gama + beta[,k,i]*z.pad[,,i]
+        }
+
+    ################## Devolver o beta atalizado pro gama ###################
+        #Fazer pensando no beta 1
 
         #if(spatial_beta == FALSE){
-        #  gama.atual = gama + beta[,k]*z.pad
+        #  gama.atual = gama + beta[,k]*z.pad  - Inverso do que foi feito na primeira linha
         #} else{
         #  beta[,k] = beta.atual - sum(beta.atual)/G
         #  gama.atual = gama + beta[,k]*z.pad

@@ -9,7 +9,7 @@ inv.logit <-function(x){
   y
 }
 
-betaf = function(x, c.f, zib.vec, eta,ni,tau.beta,bar.f){
+betaf_ICAR = function(x, c.f, zib.vec, eta,ni,tau.beta,bar.f){
   bb <- inv.logit(x)
   bb*c.f - sum( exp(bb*zib.vec + eta) ) - (1/2)*ni*tau.beta*(bb-bar.f)^2 - log(x) - log(1-x)
 }
