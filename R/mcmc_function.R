@@ -75,6 +75,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
+  #tau.beta = matrix[S, vZ]
+  #tau.beta[1,] = 1
   tau.beta = numeric(S)
   tau.beta[1] = 1
 
@@ -351,14 +353,18 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
 
     if(continuous != FALSE){
-      sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,]) #Checar dimensões
-      tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2) #Checar dimensões
+      #for(i in 1:vZ){
+      #   sum.beta = t(beta[,k,i]%*%(diag(ni)-W)%*%beta[,k,i])
+      #   tau.beta[k,i] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
+      #}
+      sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
+      tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
     }
 
     # what if we want to return the entire lambda?? CHECK SIZE! - Thais
     lambda[,k,] = exp(gama.atual)
 
-  } #mcmc end
+  } # End of the mcmc
 
   if (return_parameters == FALSE){
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda))
