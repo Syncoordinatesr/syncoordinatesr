@@ -75,10 +75,10 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
-  #tau.beta = matrix[S, vZ]
-  #tau.beta[1,] = 1
-  tau.beta = numeric(S)
-  tau.beta[1] = 1
+  tau.beta = matrix[S, vZ]
+  tau.beta[1,] = 1
+  #tau.beta = numeric(S)
+  #tau.beta[1] = 1
 
   epsilon = array(data=0, dim=c(G, 1, B))
 
@@ -251,10 +251,11 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
       for(i in 1:vZ){
 
-        gama = gama.atual - beta[,(k-1),i]*z.pad[,,i]
+        gama = gama.atual - ifelse(is.na(beta[,(k-1),i]*z.pad[,,i]), 0, beta[,(k-1),i]*z.pad[,,i])
 
         c.f = matrix(NA, G, vZ)
-        c.f[,i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum)
+        # c.f[,i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum)
+        c.f[,i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum, na.rm=T)
 
         if(spatial_beta != FALSE){
 
@@ -268,10 +269,12 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                              f = betaf_ICAR,
                              uni.sampler = "slice",
                              c.f = c.f[g,i],
-                             zib.vec = zib.vec,
-                             eta = gama[g,],     #dando erro com gama[g,1,]
+                             # zib.vec = zib.vec,
+                             zib.vec = na.omit(zib.vec),
+                             # eta = gama[g,],
+                             eta = na.omit(gama),
                              ni = ni[g],
-                             tau.beta = tau.beta[(k-1)],
+                             tau.beta = tau.beta[(k-1),i],
                              bar.f = bar,
                              control = controle))
 
@@ -289,32 +292,27 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                              f = betaf,
                              uni.sampler = "slice",
                              c.f = c.f[g,i],
-                             zib.vec = zib.vec,
-                             eta = gama[g,],     #dando erro com gama[g,1,]
+                             # zib.vec = zib.vec,
+                             zib.vec = na.omit(zib.vec),
+                             # eta = gama[g,],
+                             eta = na.omit(gama),
                              vbeta = vbeta,
                              control = controle))
 
-            #Antes beta[g,(k-1),i] = inv.logit(u)
+            # beta[g,(k-1),i] = inv.logit(u)
             beta[g,k,i] = inv.logit(u)
           }
         }
 
         if(spatial_beta != FALSE){
+          # beta[,k] = beta.atual - sum(beta.atual)/G
+          # gama.atual = gama + beta[,k]*z.pad
           beta[,k,i] = beta.atual - sum(beta.atual)/G
-          gama.atual = gama + beta[,k,i]*z.pad[,,i]
+          gama.atual = gama + ifelse(is.na(beta[,(k-1),i]*z.pad[,,i]), 0, beta[,(k-1),i]*z.pad[,,i])
         } else{
-          gama.atual = gama + beta[,k,i]*z.pad[,,i]
+          # gama.atual = gama + beta[,k]*z.pad
+          gama.atual = gama + ifelse(is.na(beta[,(k-1),i]*z.pad[,,i]), 0, beta[,(k-1),i]*z.pad[,,i])
         }
-
-    ################## Devolver o beta atalizado pro gama ###################
-        #Fazer pensando no beta 1
-
-        #if(spatial_beta == FALSE){
-        #  gama.atual = gama + beta[,k]*z.pad  - Inverso do que foi feito na primeira linha
-        #} else{
-        #  beta[,k] = beta.atual - sum(beta.atual)/G
-        #  gama.atual = gama + beta[,k]*z.pad
-        #}
       }
     }
 
@@ -353,12 +351,12 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
 
     if(continuous != FALSE){
-      #for(i in 1:vZ){
-      #   sum.beta = t(beta[,k,i]%*%(diag(ni)-W)%*%beta[,k,i])
-      #   tau.beta[k,i] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
-      #}
-      sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
-      tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
+      for(i in 1:vZ){
+        # sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
+        # tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
+        sum.beta = t(beta[,k,i]%*%(diag(ni)-W)%*%beta[,k,i])
+        tau.beta[k,i] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)
+      }
     }
 
     # what if we want to return the entire lambda?? CHECK SIZE! - Thais
