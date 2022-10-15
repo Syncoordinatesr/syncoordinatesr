@@ -75,7 +75,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
-  tau.beta = matrix[S, vZ]
+  tau.beta = matrix(0, S, vZ)
   tau.beta[1,] = 1
   #tau.beta = numeric(S)
   #tau.beta[1] = 1
@@ -122,22 +122,21 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   #gama = array(data=0, dim=c(G, ifelse(continuous != FALSE, vZ, 1), B))
   gama = array(data=0, dim=c(G, 1, B))
-    for(i in b){
-      if(length(ind.a[[i]])==0){
-        gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
-      }
-      else{
+  for(i in b){
+    if(length(ind.a[[i]])==0){
+      gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
+    } else{
         gama[,1,i] = log(n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
           theta[,1] + ifelse(length(ind.a[[i]])>1,
                              apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
                              phi[,1,ind.a[[i]]]) + epsilon[,1,i]
-      }
-      if(continuous != FALSE){
-        gama[,1,i] = gama[,1,i] + ifelse(vZ > 1,
-                                         apply(beta[,1,]*z.pad[,i,], MAR=1, FUN=sum, na.rm = TRUE),
-                                         ifelse(is.na(beta[,1,]*z.pad[,i,]), 0, beta[,1,]*z.pad[,i,]))
-      }
     }
+    if(continuous != FALSE){
+      gama[,1,i] = gama[,1,i] + ifelse(vZ > 1,
+                                       apply(beta[,1,]*z.pad[,i,], MAR=1, FUN=sum, na.rm = TRUE),
+                                       ifelse(is.na(beta[,1,]*z.pad[,i,]), 0, beta[,1,]*z.pad[,i,]))
+    }
+  }
   gama.atual = gama[,1,]
 
   lambda = array(data=0,dim=c(G, S, B))
@@ -150,7 +149,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   controle=MfU.Control(n=1,slice.w=.01,slice.m=10000,slice.lower=0,slice.upper=1)
 
-  for (k in 2:S){ #Traduzir pro nimble
+  for (k in 2:S){
 
     cat("MCMC simulation ",k," of ",S,"\n")
 
@@ -176,17 +175,17 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     #    gama.atual[,temp] = gama + alfa[t,k]
     #  }
     #} else{
-      for(t in 1:dim(alfa)[1]){
-          # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
-          ## it's accessing the wrong dimension of ci_b, it should be:
-          n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
-          gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
-          sumeta.a = sum(exp(gama))
-          alfa[t,k] <- ars(1, muf, mufprima,
-                           lb=T, xlb=-100, ub=T, xub=100,
-                           sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
-          gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
-      }
+    for(t in 1:dim(alfa)[1]){
+        # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
+        ## it's accessing the wrong dimension of ci_b, it should be:
+        n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
+        gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
+        sumeta.a = sum(exp(gama))
+        alfa[t,k] <- ars(1, muf, mufprima,
+                         lb=T, xlb=-100, ub=T, xub=100,
+                         sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
+        gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
+    }
     #}
 
     # Estimation of theta
@@ -224,31 +223,30 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     #  }
     #} else{
 
-      for(t in 1:dim(phi)[3]){
-        # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
-        ## there is also a problem with the dimensions of ci_b
-        n.phi = apply(ci_b[,sub.a[[t]]],MAR=1,FUN=sum) ## changed by Thais (Feb/2022)
-        gama = gama.atual[,sub.a[[t]]] - phi[,(k-1),t]
-        for(g in 1:G){
-          sum.phi = sum(exp(gama[g,]))
-          bar = W[g,]%*%phi.atual[,t]/ni[g]
-          phi.atual[g,t] = ars(1, thetaf, thetafprima, ns=1000,
-                               lb=T, xlb=-100, ub=T, xub=100,
-                               ci_b=n.phi[g], sumeta=sum.phi, ni=ni[g],
-                               tau.f=tau.phi[t,(k-1)], bar.f=bar)
-        }
-        phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
-        # gama.atual[,sub.a[[k]]] = eta + phi[,k,t] ## original by Leticia
-        ## seems like it was saving the updated gama in the wrong positions
-        ## k is the simulations' index, should not be used to save gama!
-        gama.atual[,sub.a[[t]]] = gama + phi[,k,t] ## changed by Thais (Feb/22)
+    for(t in 1:dim(phi)[3]){
+      # n.phi = apply(saida$ci_b[sub.a[[t]],],MAR=2,FUN=sum) ## original code by Leticia, the output dimension seems wrong
+      ## there is also a problem with the dimensions of ci_b
+      n.phi = apply(ci_b[,sub.a[[t]]],MAR=1,FUN=sum) ## changed by Thais (Feb/2022)
+      gama = gama.atual[,sub.a[[t]]] - phi[,(k-1),t]
+      for(g in 1:G){
+        sum.phi = sum(exp(gama[g,]))
+        bar = W[g,]%*%phi.atual[,t]/ni[g]
+        phi.atual[g,t] = ars(1, thetaf, thetafprima, ns=1000,
+                             lb=T, xlb=-100, ub=T, xub=100,
+                             ci_b=n.phi[g], sumeta=sum.phi, ni=ni[g],
+                             tau.f=tau.phi[t,(k-1)], bar.f=bar)
       }
+      phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
+      # gama.atual[,sub.a[[k]]] = eta + phi[,k,t] ## original by Leticia
+      ## seems like it was saving the updated gama in the wrong positions
+      ## k is the simulations' index, should not be used to save gama!
+      gama.atual[,sub.a[[t]]] = gama + phi[,k,t] ## changed by Thais (Feb/22)
+    }
     #}
 
-    ######################## Checar sobre os diferentes funções para betaf contidas no pacote
-    #Estimation of beta - check it
-    if(continuous != FALSE){
+    #Estimation of beta
 
+    if(continuous != FALSE){
       for(i in 1:vZ){
 
         gama = gama.atual - ifelse(is.na(beta[,(k-1),i]*z.pad[,,i]), 0, beta[,(k-1),i]*z.pad[,,i])
@@ -258,7 +256,6 @@ syn_mcmc <- function(dataset, coord, grid = 10,
         c.f[,i] = apply(ci_b*z.pad[, ,i],MAR=1,FUN=sum, na.rm=T)
 
         if(spatial_beta != FALSE){
-
           for(g in 1:G){
 
             zib.vec = z.pad[g,,i]
@@ -269,10 +266,10 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                              f = betaf_ICAR,
                              uni.sampler = "slice",
                              c.f = c.f[g,i],
-                             # zib.vec = zib.vec,
-                             zib.vec = na.omit(zib.vec),
-                             # eta = gama[g,],
-                             eta = na.omit(gama),
+                             # zib.vec = na.omit(zib.vec),
+                             zib.vec = ifelse(is.na(zib.vec), 0, zib.vec),
+                             # eta = na.omit(gama[g,]),
+                             eta = gama[g,],
                              ni = ni[g],
                              tau.beta = tau.beta[(k-1),i],
                              bar.f = bar,
@@ -292,10 +289,10 @@ syn_mcmc <- function(dataset, coord, grid = 10,
                              f = betaf,
                              uni.sampler = "slice",
                              c.f = c.f[g,i],
-                             # zib.vec = zib.vec,
-                             zib.vec = na.omit(zib.vec),
-                             # eta = gama[g,],
-                             eta = na.omit(gama),
+                             # zib.vec = na.omit(zib.vec),
+                             zib.vec = ifelse(is.na(zib.vec), 0, zib.vec),
+                             # eta = na.omit(gama[g,]),
+                             eta = gama[g,],
                              vbeta = vbeta,
                              control = controle))
 
@@ -303,7 +300,6 @@ syn_mcmc <- function(dataset, coord, grid = 10,
             beta[g,k,i] = inv.logit(u)
           }
         }
-
         if(spatial_beta != FALSE){
           # beta[,k] = beta.atual - sum(beta.atual)/G
           # gama.atual = gama + beta[,k]*z.pad
@@ -334,8 +330,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
     # compute the up-to-date mean of lambda, in case of returning just the mean
     if(k > burn){
       media.lambda = (media.lambda*((k-burn-1)/(k-burn))) +
-        # (exp(eta.atual)/(k-burn)) # original code by Leticia ??
-        (exp(gama.atual)/(k-burn)) # changed by Thais (Feb/2022)
+                      #(exp(eta.atual)/(k-burn)) # original code by Leticia ??
+                       (exp(gama.atual)/(k-burn)) # changed by Thais (Feb/2022)
     }
 
     sum.theta = t(theta[,k])%*%(diag(ni)-W)%*%(theta[,k])
@@ -346,7 +342,8 @@ syn_mcmc <- function(dataset, coord, grid = 10,
       tau.phi[m,k] = rgamma(1,aphi+G/2,rate=bphi+sum.phi/2)
     }
 
-    ## Update of tau.e
+    # Update of tau.e
+
     sum.e = sum(epsilon^2)
     tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
 
@@ -366,8 +363,7 @@ syn_mcmc <- function(dataset, coord, grid = 10,
 
   if (return_parameters == FALSE){
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda))
-  }
-  else{
+  } else{
     return(list(S=S, burn=burn, lambda=lambda, media.lambda=media.lambda,
                 alfa=alfa, mu=mu, theta=theta, tau.theta=tau.theta, phi=phi, tau.phi=tau.phi, epsilon=epsilon, tau.e=tau.e))
   }
