@@ -20,16 +20,16 @@ syn_mcmc(
 
 \item{S}{Quantities of simulations that will be made. With a default result of (S = 5000)}
 
-\item{burn}{The number of simulations that will be burned to warm-up the mcmc. With a default result of (burn = 1000)}
+\item{burn}{The number of simulations that will be burned to warm-up the \code{mcmc}. With a default result of (\code{burn} = 1000)}
 
-\item{continuous}{Option so the user can choose between a continuous variable or a discrete. With default using a discrete variable}
+\item{continuous}{Option so the user can warn the function for the presence of continuous variables in the dataset. You must indicate the columns numbers that contain continuous variables in a vector}
 
-\item{spatial_beta}{Option so you can choose to use a spatial beta parameter}
+\item{spatial_beta}{Option so the user can choose to use a spatial \code{beta} parameter. You must input a vector containing which \code{beta} you want to add the spatiality. If you want to select all beta, you can use the logical argument TRUE}
 
 \item{return_paramenters}{Option to return the result of the parameters. With default not returning the parameters}
 }
 \value{
-Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter, or all other significant parameters too.
+Depending on the \code{return_parameters} parameter, this function can return only the \code{lambda} parameter or all other significant parameters too.
 }
 \description{
 A MCMC function that will be useful to obtain the synthetic coordinates.

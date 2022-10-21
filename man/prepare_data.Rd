@@ -4,7 +4,7 @@
 \alias{prepare_data}
 \title{A function that generates useful objects for the package from the database}
 \usage{
-prepare_data(dataset, coord, grid = 10)
+prepare_data(dataset, coord, grid = 10, continuous = FALSE)
 }
 \arguments{
 \item{dataset}{A data frame with all the information except the coordinates}
@@ -12,6 +12,8 @@ prepare_data(dataset, coord, grid = 10)
 \item{coord}{An object with two columns indicating the latitude and longitude respectively of the elements in the dataset}
 
 \item{grid}{The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)}
+
+\item{continuous}{An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)}
 }
 \value{
 A list containing useful objects to the mcmc function.
@@ -20,7 +22,7 @@ A list containing useful objects to the mcmc function.
 An auxiliary function to generate useful objects for the other functions in this package.
 Function \code{prepare_data} has the goal of receiving the database of the user to generate important variables that will be used in the MCMC.
 And in the end to generate the synthetic coordinates.
-In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid}.
+In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid},  \code{continuous}.
 }
 \references{
 NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
