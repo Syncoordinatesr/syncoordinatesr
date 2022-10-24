@@ -75,10 +75,12 @@ syn_mcmc <- function(dataset, coord, grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
-  tau.beta = matrix(0, S, vZ)
-  tau.beta[1,] = 1
-  #tau.beta = numeric(S)
-  #tau.beta[1] = 1
+  if(continuous != FALSE){
+    tau.beta = matrix(0, S, vZ)
+    tau.beta[1,] = 1
+    #tau.beta = numeric(S)
+    #tau.beta[1] = 1
+  }
 
   epsilon = array(data=0, dim=c(G, 1, B))
 
