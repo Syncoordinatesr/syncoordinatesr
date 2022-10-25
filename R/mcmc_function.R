@@ -7,6 +7,8 @@
 #' By the end of this function we get the parameter \code{lambda} that will be required when creating the synthetic coordinates.
 #'
 #' @param  dataset   A data frame with all the information except the coordinates
+#' @param  coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param  grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param  S   Quantities of simulations that will be made. With a default result of (S = 5000)
 #' @param  burn   The number of simulations that will be burned to warm-up the \code{mcmc}. With a default result of (\code{burn} = 1000)
 #' @param  continuous  Option so the user can warn the function for the presence of continuous variables in the dataset. You must indicate the columns numbers that contain continuous variables in a vector

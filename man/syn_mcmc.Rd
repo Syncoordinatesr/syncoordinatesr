@@ -18,6 +18,10 @@ syn_mcmc(
 \arguments{
 \item{dataset}{A data frame with all the information except the coordinates}
 
+\item{coord}{An object with two columns indicating the latitude and longitude respectively of the elements in the dataset}
+
+\item{grid}{The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)}
+
 \item{S}{Quantities of simulations that will be made. With a default result of (S = 5000)}
 
 \item{burn}{The number of simulations that will be burned to warm-up the \code{mcmc}. With a default result of (\code{burn} = 1000)}
