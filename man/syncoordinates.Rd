@@ -9,13 +9,13 @@ syncoordinates(dataset, coord, grid = 10, list_mcmc, n.syn = 5)
 \arguments{
 \item{dataset}{A data frame with all the information except the coordinates}
 
+\item{coord}{An object with two columns indicating the latitude and longitude respectively of the elements in the dataset}
+
 \item{grid}{The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)}
 
 \item{list_mcmc}{Output of the mcmc function}
 
 \item{n.syn}{number of synthetic database that will be returned}
-
-\item{cooord}{An object with two columns indicating the latitude and longitude respectively of the elements in the dataset}
 }
 \value{
 The function returns an object of \code{data.frame} class, containing all new synthetic coordinates

@@ -7,7 +7,7 @@
 #' And the function returns the synthetic databases containing the synthetic coordinates.
 #'
 #' @param  dataset   A data frame with all the information except the coordinates
-#' @param  cooord    An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param  coord    An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
 #' @param  grid    The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param  list_mcmc    Output of the mcmc function
 #' @param  n.syn   number of synthetic database that will be returned
