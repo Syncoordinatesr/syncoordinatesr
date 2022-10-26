@@ -4,7 +4,14 @@
 \alias{syncoordinates}
 \title{Generation of synthetic coordinates}
 \usage{
-syncoordinates(dataset, coord, grid = 10, list_mcmc, n.syn = 5)
+syncoordinates(
+  dataset,
+  coord,
+  grid = 10,
+  continuous = FALSE,
+  list_mcmc,
+  n.syn = 5
+)
 }
 \arguments{
 \item{dataset}{A data frame with all the information except the coordinates}
@@ -13,12 +20,14 @@ syncoordinates(dataset, coord, grid = 10, list_mcmc, n.syn = 5)
 
 \item{grid}{The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)}
 
+\item{continuous}{An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)}
+
 \item{list_mcmc}{Output of the mcmc function}
 
-\item{n.syn}{number of synthetic database that will be returned}
+\item{n.syn}{Number of synthetic database that will be returned}
 }
 \value{
-The function returns an object of \code{data.frame} class, containing all new synthetic coordinates
+The return will depend on the argument continuous, if '\code{continuous} = FALSE' the function will return an object of \code{data.frame} class containing all new synthetic coordinates, but if '\code{continuous} != FALSE' in addition to the \code{data.frame} with the synthetic coordinates the function will return new synthetic data to each continuous variables indicated in argument \code{continuous}
 }
 \description{
 A function that generates synthetic coordinates.

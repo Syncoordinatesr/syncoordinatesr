@@ -6,13 +6,14 @@
 #' Function \code{syncoordinates} receives the database, the parameter lambda and the number of synthetic data the user desires.
 #' And the function returns the synthetic databases containing the synthetic coordinates.
 #'
-#' @param  dataset   A data frame with all the information except the coordinates
-#' @param  coord    An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
-#' @param  grid    The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
-#' @param  list_mcmc    Output of the mcmc function
-#' @param  n.syn   number of synthetic database that will be returned
+#' @param  dataset  A data frame with all the information except the coordinates
+#' @param  coord  An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param  grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
+#' @param  continuous  An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)
+#' @param  list_mcmc  Output of the mcmc function
+#' @param  n.syn  Number of synthetic database that will be returned
 #'
-#' @return The function returns an object of \code{data.frame} class, containing all new synthetic coordinates
+#' @return The return will depend on the argument continuous, if '\code{continuous} = FALSE' the function will return an object of \code{data.frame} class containing all new synthetic coordinates, but if '\code{continuous} != FALSE' in addition to the \code{data.frame} with the synthetic coordinates the function will return new synthetic data to each continuous variables indicated in argument \code{continuous}
 #'
 #' @references
 #' NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
@@ -23,45 +24,89 @@
 #'
 #' @export
 
-syncoordinates <- function(dataset, coord, grid = 10, list_mcmc, n.syn = 5){
+syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_mcmc, n.syn = 5){
 
-  saida = prepare_data(dataset, coord, grid)
+  saida = prepare_data(dataset, coord, grid, continuous)
 
-  int.syn = floor((list_mcmc$S-list_mcmc$burn-1)/(n.syn-1))
-  list.syn = seq(list_mcmc$burn+1,list_mcmc$burn+(n.syn-1)*int.syn+1,by=int.syn)
+  mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
+  mapply(assign, names(list_mcmc), list_mcmc, MoreArgs=list(envir = globalenv()))
+
+  int.syn = floor((S-burn-1)/(n.syn-1))
+  list.syn = seq(burn+1, burn+(n.syn-1)*int.syn+1, by=int.syn)
   #syn.data = list(1)
   #syn.data = c(syn.data,2:n.syn)
 
-  m=length(list.syn)
+  m = length(list.syn)
 
-  prob=array(0,dim=c(saida$G,m,saida$B))
+  prob = array(0, dim=c(G,m,B))
 
   for(k in 1:m){
-    for(j in 1:saida$B){
-      for(i in 1:saida$G){
-        prob[i,k,j]=list_mcmc$lambda[i,list.syn[k],j]/sum(list_mcmc$lambda[,list.syn[k],j])
+    for(j in 1:B){
+      for(i in 1:G){
+        prob[i,k,j] = lambda[i,list.syn[k],j]/sum(lambda[, list.syn[k], j])
       }
     }
   }
 
-  loc=matrix(0,saida$n,m)
+  loc = matrix(0, n, m)
 
   for(k in 1:m){
-    for (j in 1:saida$B){
-      aux = saida$comb==j
-      loc[aux,k] = sample(c(1:saida$G),sum(aux),prob=prob[,k,j],rep=T)
+    for (j in 1:B){
+      aux = comb==j
+      loc[aux,k] = sample(c(1:G), sum(aux), prob=prob[,k,j], rep=T)
     }
   }
 
-  sin=array(0,c(saida$n,2,m))
-  aux1=array(0,c(saida$n,2,m))
+  syn = array(0, c(n,2,m))
+  aux1 = array(0, c(n,2,m))
 
   for(k in 1:m){
-    aux1[,,k] = vec2mat(loc[,k],grid)
-    for (i in 1:saida$n){
-      sin[i,1,k] = runif(1, saida$lonvec[aux1[i,1,k]], saida$lonvec[aux1[i,1,k]+1])
-      sin[i,2,k] = runif(1, saida$latvec[aux1[i,2,k]], saida$latvec[aux1[i,2,k]+1] )
+    aux1[,,k] = vec2mat(loc[,k], grid)
+    for (i in 1:n){
+      syn[i,1,k] = runif(1, lonvec[aux1[i,1,k]], lonvec[aux1[i,1,k]+1])
+      syn[i,2,k] = runif(1, latvec[aux1[i,2,k]], latvec[aux1[i,2,k]+1] )
     }
   }
-  return(sin)
+
+  if(continuous != FALSE){
+
+    sigma.z = matrix(0, B, vZ)
+    mean.z = matrix(0, B, vZ)
+
+    for(i in 1:B){
+      for(j in 1:vZ){
+        sigma.z[i,j] = sd(z.pad[z.pad[,i,j]>0, i])
+        mean.z[i,j] = mean(z.pad[z.pad[,i,j]>0, i])
+        #sigma.z[i,j] = sd(zbarra[zbarra[,i,j]>0, i])
+        #mean.z[i,j] = mean(zbarra[zbarra[,i,j]>0, i])
+      }
+    }
+
+    z.syn = array(0, c(n, vZ, m))
+
+    for(k in 1:m){
+      for(j in 1:vZ){
+        for(i in 1:n){
+          z.syn[i,j,k] = rnorm(1,z.pad[loc[i,k],comb[i],j],1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
+        }
+      }
+    }
+
+    #dataset.syn <- array(NA, c(n, p, m))
+    #aux.dataset <- dataset
+    #
+    #for(k in 1:m){
+    #   for(j in 1:vZ){
+    #      aux.dataset[, continuous[j]] <- z.syn[,j,k]
+    #   }
+    #   dataset.syn[,,k] <- aux.dataset
+    #}
+
+  }
+
+  if(continuous != FALSE){
+    return(syn, z.syn)
+  } else{
+    return(syn)
+  }
 }
