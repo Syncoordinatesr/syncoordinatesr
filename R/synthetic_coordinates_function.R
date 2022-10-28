@@ -57,14 +57,14 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
     }
   }
 
-  syn = array(0, c(n,2,m))
+  coord.syn = array(0, c(n,2,m))
   aux1 = array(0, c(n,2,m))
 
   for(k in 1:m){
     aux1[,,k] = vec2mat(loc[,k], grid)
     for (i in 1:n){
-      syn[i,1,k] = runif(1, lonvec[aux1[i,1,k]], lonvec[aux1[i,1,k]+1])
-      syn[i,2,k] = runif(1, latvec[aux1[i,2,k]], latvec[aux1[i,2,k]+1] )
+      coord.syn[i,1,k] = runif(1, lonvec[aux1[i,1,k]], lonvec[aux1[i,1,k]+1])
+      coord.syn[i,2,k] = runif(1, latvec[aux1[i,2,k]], latvec[aux1[i,2,k]+1])
     }
   }
 
@@ -75,10 +75,10 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
 
     for(i in 1:B){
       for(j in 1:vZ){
-        sigma.z[i,j] = sd(z.pad[z.pad[,i,j]>0, i])
-        mean.z[i,j] = mean(z.pad[z.pad[,i,j]>0, i])
-        #sigma.z[i,j] = sd(zbarra[zbarra[,i,j]>0, i])
-        #mean.z[i,j] = mean(zbarra[zbarra[,i,j]>0, i])
+        sigma.z[i,j] = sd(z.bar[, i, j], na.rm = T)
+        mean.z[i,j] = mean(z.bar[, i, j], na.rm = T)
+        #sigma.z[i,j] = sd(z.bar[z.bar[,i,j]>0, i,])
+        #mean.z[i,j] = mean(z.bar[z.bar[,i,j]>0, i,])
       }
     }
 
@@ -88,6 +88,7 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
       for(j in 1:vZ){
         for(i in 1:n){
           z.syn[i,j,k] = rnorm(1,z.pad[loc[i,k],comb[i],j],1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
+          #z.syn[i,j,k] = rnorm(1,0,1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
         }
       }
     }
@@ -105,8 +106,8 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
   }
 
   if(continuous != FALSE){
-    return(syn, z.syn)
+    return(coord.syn, z.syn)
   } else{
-    return(syn)
+    return(coord.syn)
   }
 }
