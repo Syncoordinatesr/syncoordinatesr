@@ -8,6 +8,7 @@
 #'
 #' @param  dataset   A data frame with all the information except the coordinates
 #' @param  coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param  limits An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object.
 #' @param  grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param  S   Quantities of simulations that will be made. With a default result of (S = 5000)
 #' @param  burn   The number of simulations that will be burned to warm-up the \code{mcmc}. With a default result of (\code{burn} = 1000)
@@ -28,16 +29,16 @@
 #'
 #' @export
 
-syn_mcmc <- function(dataset, coord, grid = 10,
+syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
                           S = 5000, burn = 1000,
                           continuous = FALSE, spatial_beta = FALSE,
                           return_parameters = FALSE){
 
 
   if(continuous != FALSE){
-    saida = prepare_data(dataset, coord, grid, continuous)
+    saida = prepare_data(dataset, coord, limits, grid, continuous)
   } else{
-    saida = prepare_data(dataset, coord, grid)
+    saida = prepare_data(dataset, coord, limits, grid)
   }
 
   # Assigning the elements of the output to new objects
