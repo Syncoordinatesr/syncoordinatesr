@@ -9,6 +9,7 @@
 #'
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param   limits An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object.
 #' @param   grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param   continuous  An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)
 #'
@@ -20,7 +21,7 @@
 #'
 #' @import spdep
 
-prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
+prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = FALSE){
 
   if (!is.data.frame(dataset))
     stop("The dataset must be an object of 'data.frame' class")
@@ -82,11 +83,26 @@ prepare_data <- function(dataset, coord, grid = 10, continuous = FALSE){
   xmin = min(coord[,1])
   ymax = max(coord[,2])
   ymin = min(coord[,2])
-
-  # Dividing in equal spaces according to the 'grid' value
-  dxvec = (xmax-xmin)/grid
-  dyvec = (ymax-ymin)/grid
-
+  
+  if (length(limits) == 0) {
+    # Dividing in equal spaces according to the 'grid' value
+    dxvec = (xmax - xmin) / grid
+    dyvec = (ymax - ymin) / grid
+  } else {
+    # Lower and upper limits for latitude and longitude passed by the users
+    # Dividing in equal spaces according to the 'grid' value        
+    dxvec = (limits[2] - limits[1]) / grid
+    dyvec = (limits[4] - limits[3]) / grid
+    n_coords_outside = 0
+    for (j in range(length(coord))) {
+      if(!is_in_area(coord[j,1], coord[j,2], limits[1], limits[2], limits[3], limits[4])) {
+        n_coords_outside = n_coords_outside + 1
+      }
+    }
+    cat("Warning: Number of coordinates outside the informed limit = ", 
+        n_coords_outside, "\n")
+  }
+  
   # Vectors of latitude and longitude divided
   lonvec = seq(xmin,xmax,dxvec)
   latvec = seq(ymin,ymax,dyvec)
