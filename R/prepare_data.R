@@ -201,3 +201,4 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
                 ind.a=ind.a, sub.a=sub.a, W=W))
   }
 }
+
