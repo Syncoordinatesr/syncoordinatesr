@@ -9,7 +9,7 @@
 #'
 #' @param   dataset   A data frame with all the information except the coordinates
 #' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
-#' @param   limits An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object.
+#' @param   limits An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object
 #' @param   grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param   continuous  An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)
 #'
