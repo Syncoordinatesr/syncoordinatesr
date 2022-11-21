@@ -11,7 +11,7 @@ prepare_data(dataset, coord, limits = c(), grid = 10, continuous = FALSE)
 
 \item{coord}{An object with two columns indicating the latitude and longitude respectively of the elements in the dataset}
 
-\item{limits}{An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object}
+\item{limits}{An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object.}
 
 \item{grid}{The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)}
 
@@ -24,7 +24,7 @@ A list containing useful objects to the mcmc function.
 An auxiliary function to generate useful objects for the other functions in this package.
 Function \code{prepare_data} has the goal of receiving the database of the user to generate important variables that will be used in the MCMC.
 And in the end to generate the synthetic coordinates.
-In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{grid},  \code{continuous}.
+In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{limits}, \code{grid},  \code{continuous}.
 }
 \references{
 NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
