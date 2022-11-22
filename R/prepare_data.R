@@ -20,6 +20,8 @@
 #' Disponível em: \url:{http//est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}. Acesso em: 2 mar. 2022.
 #'
 #' @import spdep
+#' 
+#' @export
 
 prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = FALSE){
 
