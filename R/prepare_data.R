@@ -90,11 +90,15 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
     # Dividing in equal spaces according to the 'grid' value
     dxvec = (xmax - xmin) / grid
     dyvec = (ymax - ymin) / grid
+    lonvec = seq(xmin,xmax,dxvec)
+    latvec = seq(ymin,ymax,dyvec)
   } else {
     # Lower and upper limits for latitude and longitude passed by the users
     # Dividing in equal spaces according to the 'grid' value        
     dxvec = (limits[2] - limits[1]) / grid
     dyvec = (limits[4] - limits[3]) / grid
+    lonvec = seq(limits[1],limits[2],dxvec)
+    latvec = seq(limits[3],limits[4],dyvec)
     n_coords_outside = 0
     for (j in range(length(coord))) {
       if(!is_in_area(coord[j,1], coord[j,2], limits[1], limits[2], limits[3], limits[4])) {
@@ -106,8 +110,6 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   }
   
   # Vectors of latitude and longitude divided
-  lonvec = seq(xmin,xmax,dxvec)
-  latvec = seq(ymin,ymax,dyvec)
   xlon = findInterval(coord[,1], lonvec, all.inside = T)
   ylat = findInterval(coord[,2], latvec, all.inside = T)
   celula = matrix(cbind(xlon,ylat), nrow=n, ncol=2)
