@@ -12,9 +12,10 @@
 #' @author
 #' Authors:
 #' \itemize{
-#' \item{Leonardo de Mattos Galhardo}
-#' \item{Leticia Silva Nunes}
 #' \item{Thais Paiva}
+#' \item{Leticia Silva Nunes}
+#' \item{Leonardo de Mattos Galhardo}
+#' \item{Fernanda Buzza Alves Barros}
 #' }
 #'
 #' @docType package
