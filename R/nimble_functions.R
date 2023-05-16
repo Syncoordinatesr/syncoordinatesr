@@ -1,40 +1,40 @@
 #Caso discreto####
-discrete_nimble <- function(){
+discrete_nimble <- function(matrix.ind.a){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination
     for (j in 1:B){
       for(k in 1:a){
         sup_alfa[j,k] <- alfa[k] * matrix.ind.a[j,k]
       }
-      
+
       alfa_b[j] <- sum(sup_alfa[j,1:a])
     }
-    
+
     #Calculation of phi_b for each combination
     for(i in 1:G){
       for (j in 1:B){
         for(k in 1:a){
           sup_phi[i,j,k] <- phi[i,k] * matrix.ind.a[j,k]
         }
-        
+
         phi_b[i,j] <- sum(sup_phi[i,j,1:a])
       }
     }
-    
+
     #Modeling lambda and ci_b
     for(i in 1:G){
       for (j in 1:B){
         log(lambda[i,j]) <-  mu +
-          alfa_b[j] + 
+          alfa_b[j] +
           theta[i] +
           phi_b[i,j] +
           epsilon[i,j]# + n
         ci_b[i,j] ~ dpois(lambda[i,j])
       }
     }
-    
+
     #Priori functions
-    
+
     for(k in 1:a){
       phi[1:G,k] ~ dcar_normal(adj = w[1:L],
                                num = Nw[1:G],
@@ -42,23 +42,23 @@ discrete_nimble <- function(){
                                zero_mean = 1)
       tau_phi[k] ~ dgamma(a_phi,b_phi)
     }
-    
-    
+
+
     theta[1:G] ~ dcar_normal(adj = w[1:L],
                              num = Nw[1:G],
                              tau = tau_theta,
                              zero_mean = 1)
     tau_theta ~ dgamma(a_theta,b_theta)
-    
-    
+
+
     for(k in 1:a){
       alfa[k] ~ dnorm(0, var = v_alfa_kj)
     }
-    
-    
+
+
     mu ~ dnorm(0, var = v_mu)
-    
-    
+
+
     for(i in 1:G){
       for(j in 1:B){
         epsilon[i,j] ~ dnorm(0, tau = tau_e)
@@ -66,7 +66,7 @@ discrete_nimble <- function(){
     }
     tau_e ~ dgamma(a_epsilon, b_epsilon)
   })
-  
+
   pumpConsts <- list(
     #Model constants
     G = G, B = B,# n = n,                                          #generic
@@ -88,7 +88,7 @@ discrete_nimble <- function(){
     phi = matrix(0, pumpConsts$G, pumpConsts$a),                  #spatial
     epsilon = matrix(0, pumpConsts$G, pumpConsts$B)               #error
   )
-  
+
   return(list(Code = pumpCode,
               Consts = pumpConsts,
               Data = pumpData,
@@ -96,33 +96,33 @@ discrete_nimble <- function(){
 }
 
 #Caso contínuo single normal beta####
-single_nimble_beta <- function(){
+single_nimble_beta <- function(matrix.ind.a){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination####
     for (j in 1:B){
       for(k in 1:a){
         sup_alfa[j,k] <- alfa[k] * matrix.ind.a[j,k]
       }
-      
+
       alfa_b[j] <- sum(sup_alfa[j,1:a])
     }
-    
+
     #Calculation of phi_b for each combination####
     for(i in 1:G){
       for (j in 1:B){
         for(k in 1:a){
           sup_phi[i,j,k] <- phi[i,k] * matrix.ind.a[j,k]
         }
-        
+
         phi_b[i,j] <- sum(sup_phi[i,j,1:a])
       }
     }
-    
+
     #Modeling lambda and ci_b####
     for(i in 1:G){
       for (j in 1:B){
         log(lambda[i,j]) <-  mu +
-          alfa_b[j] + 
+          alfa_b[j] +
           theta[i] +
           phi_b[i,j] +
           beta[i]*z_pad[i,j] +
@@ -130,9 +130,9 @@ single_nimble_beta <- function(){
         ci_b[i,j] ~ dpois(lambda[i,j])
       }
     }
-    
+
     #Priori functions####
-    
+
     for(k in 1:a){
       phi[1:G,k] ~ dcar_normal(adj = w[1:L],
                                num = Nw[1:G],
@@ -140,37 +140,37 @@ single_nimble_beta <- function(){
                                zero_mean = 1)
       tau_phi[k] ~ dgamma(a_phi,b_phi)
     }
-    
-    
+
+
     theta[1:G] ~ dcar_normal(adj = w[1:L],
                              num = Nw[1:G],
                              tau = tau_theta,
                              zero_mean = 1)
     tau_theta ~ dgamma(a_theta,b_theta)
-    
-    
+
+
     for(k in 1:a){
       alfa[k] ~ dnorm(0, var = v_alfa_kj)
     }
-    
-    
+
+
     mu ~ dnorm(0, var = v_mu)
-    
-    
+
+
     for(i in 1:G){
       for(j in 1:B){
         epsilon[i,j] ~ dnorm(0, tau = tau_e)
       }
     }
     tau_e ~ dgamma(a_epsilon, b_epsilon)
-    
+
     for(i in 1:G){
       beta[i] ~ dnorm(0, tau = tau_beta)
     }
     tau_beta ~ dgamma(a_beta, b_beta)
-    
+
   })
-  
+
   pumpConsts <- list(
     #Model constants
     G = G, B = B, #n = n,                                          #generic
@@ -195,7 +195,7 @@ single_nimble_beta <- function(){
     epsilon = matrix(0, pumpConsts$G, pumpConsts$B),              #error
     beta = rep(1, pumpConsts$G)                  #continuous
   )
-  
+
   return(list(Code = pumpCode,
               Consts = pumpConsts,
               Data = pumpData,
@@ -203,33 +203,33 @@ single_nimble_beta <- function(){
 }
 
 #Caso contínuo single spatial beta####
-single_nimble_beta_spatial <- function(){
+single_nimble_beta_spatial <- function(matrix.ind.a){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination
     for (j in 1:B){
       for(k in 1:a){
         sup_alfa[j,k] <- alfa[k] * matrix.ind.a[j,k]
       }
-      
+
       alfa_b[j] <- sum(sup_alfa[j,1:a])
     }
-    
+
     #Calculation of phi_b for each combination
     for(i in 1:G){
       for (j in 1:B){
         for(k in 1:a){
           sup_phi[i,j,k] <- phi[i,k] * matrix.ind.a[j,k]
         }
-        
+
         phi_b[i,j] <- sum(sup_phi[i,j,1:a])
       }
     }
-    
+
     #Modeling lambda and ci_b
     for(i in 1:G){
       for(j in 1:B){
         log(lambda[i,j]) <-  mu +
-          alfa_b[j] + 
+          alfa_b[j] +
           theta[i] +
           phi_b[i,j] +
           beta[i]*z_pad[i,j] +
@@ -237,9 +237,9 @@ single_nimble_beta_spatial <- function(){
         ci_b[i,j] ~ dpois(lambda[i,j])
       }
     }
-    
+
     #Priori functions
-    
+
     for(k in 1:a){
       phi[1:G,k] ~ dcar_normal(adj = w[1:L],
                                num = Nw[1:G],
@@ -247,38 +247,38 @@ single_nimble_beta_spatial <- function(){
                                zero_mean = 1)
       tau_phi[k] ~ dgamma(a_phi,b_phi)
     }
-    
-    
+
+
     theta[1:G] ~ dcar_normal(adj = w[1:L],
                              num = Nw[1:G],
                              tau = tau_theta,
                              zero_mean = 1)
     tau_theta ~ dgamma(a_theta,b_theta)
-    
-    
+
+
     for(k in 1:a){
       alfa[k] ~ dnorm(0, var = v_alfa_kj)
     }
-    
-    
+
+
     mu ~ dnorm(0, var = v_mu)
-    
-    
+
+
     for(i in 1:G){
       for(j in 1:B){
         epsilon[i,j] ~ dnorm(0, tau = tau_e)
       }
     }
     tau_e ~ dgamma(a_epsilon, b_epsilon)
-    
+
     beta[1:G] ~ dcar_normal(adj = w[1:L],
                             num = Nw[1:G],
                             tau = tau_beta,
                             zero_mean = 1)
     tau_beta ~ dgamma(a_beta, b_beta)
-    
+
   })
-  
+
   pumpConsts <- list(
     #Model constants
     G = G, B = B,# n = n,                                         #generic
@@ -303,7 +303,7 @@ single_nimble_beta_spatial <- function(){
     epsilon = matrix(0, pumpConsts$G, pumpConsts$B),              #error
     beta = rep(1, pumpConsts$G)                 #continuous
   )
-  
+
   return(list(Code = pumpCode,
               Consts = pumpConsts,
               Data = pumpData,
@@ -311,28 +311,28 @@ single_nimble_beta_spatial <- function(){
 }
 
 #Caso contínuo multiple normal beta####
-mult_nimble_beta <- function(){
+mult_nimble_beta <- function(matrix.ind.a){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination####
     for (j in 1:B){
       for(k in 1:a){
         sup_alfa[j,k] <- alfa[k] * matrix.ind.a[j,k]
       }
-      
+
       alfa_b[j] <- sum(sup_alfa[j,1:a])
     }
-    
+
     #Calculation of phi_b for each combination####
     for(i in 1:G){
       for (j in 1:B){
         for(k in 1:a){
           sup_phi[i,j,k] <- phi[i,k] * matrix.ind.a[j,k]
         }
-        
+
         phi_b[i,j] <- sum(sup_phi[i,j,1:a])
       }
     }
-    
+
     #Sum of the ponderated betas####
     for(i in 1:G){
       for (j in 1:B){
@@ -342,12 +342,12 @@ mult_nimble_beta <- function(){
         beta_soma[i,j] <- sum(sup_beta[i,j,1:C])
       }
     }
-    
+
     #Modeling lambda and ci_b####
     for(i in 1:G){
       for (j in 1:B){
         log(lambda[i,j]) <-  mu +
-          alfa_b[j] + 
+          alfa_b[j] +
           theta[i] +
           phi_b[i,j] +
           beta_soma[i,j] +
@@ -355,9 +355,9 @@ mult_nimble_beta <- function(){
         ci_b[i,j] ~ dpois(lambda[i,j])#e se multiplicar aqui por n
       }
     }
-    
+
     #Priori functions####
-    
+
     for(k in 1:a){
       phi[1:G,k] ~ dcar_normal(adj = w[1:L],
                                num = Nw[1:G],
@@ -365,40 +365,40 @@ mult_nimble_beta <- function(){
                                zero_mean = 1)
       tau_phi[k] ~ dgamma(a_phi,b_phi)
     }
-    
-    
+
+
     theta[1:G] ~ dcar_normal(adj = w[1:L],
                              num = Nw[1:G],
                              tau = tau_theta,
                              zero_mean = 1)
     tau_theta ~ dgamma(a_theta,b_theta)
-    
-    
+
+
     for(k in 1:a){
       alfa[k] ~ dnorm(0, var = v_alfa_kj)
     }
-    
-    
+
+
     mu ~ dnorm(0, var = v_mu)
-    
-    
+
+
     for(i in 1:G){
       for(j in 1:B){
         epsilon[i,j] ~ dnorm(0, tau = tau_e)
       }
     }
     tau_e ~ dgamma(a_epsilon, b_epsilon)
-    
+
     for(c in 1:C){
       tau_beta[c] ~ dgamma(a_beta, b_beta)
-      
+
       for(i in 1:G){
         beta[i, c] ~ dnorm(0, tau = tau_beta[c])
       }
     }
-    
+
   })
-  
+
   pumpConsts <- list(
     #Model constants
     G = G, B = B, #n = n,                                          #generic
@@ -423,7 +423,7 @@ mult_nimble_beta <- function(){
     epsilon = matrix(0, pumpConsts$G, pumpConsts$B),              #error
     beta = matrix(1, pumpConsts$G, pumpConsts$C)                  #continuous
   )
-  
+
   return(list(Code = pumpCode,
               Consts = pumpConsts,
               Data = pumpData,
@@ -431,28 +431,28 @@ mult_nimble_beta <- function(){
 }
 
 #Caso contínuo multiple spatial beta####
-mult_nimble_beta_spatial <- function(){
+mult_nimble_beta_spatial <- function(matrix.ind.a){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination####
     for (j in 1:B){
       for(k in 1:a){
         sup_alfa[j,k] <- alfa[k] * matrix.ind.a[j,k]
       }
-      
+
       alfa_b[j] <- sum(sup_alfa[j,1:a])
     }
-    
+
     #Calculation of phi_b for each combination#####
     for(i in 1:G){
       for (j in 1:B){
         for(k in 1:a){
           sup_phi[i,j,k] <- phi[i,k] * matrix.ind.a[j,k]
         }
-        
+
         phi_b[i,j] <- sum(sup_phi[i,j,1:a])
       }
     }
-    
+
     #Sum of the ponderated betas####
     for(i in 1:G){
       for (j in 1:B){
@@ -462,12 +462,12 @@ mult_nimble_beta_spatial <- function(){
         beta_soma[i,j] <- sum(sup_beta[i,j,1:C])
       }
     }
-    
+
     #Modeling lambda and ci_b#####
     for(i in 1:G){
       for(j in 1:B){
         log(lambda[i,j]) <-  mu +
-          alfa_b[j] + 
+          alfa_b[j] +
           theta[i] +
           phi_b[i,j] +
           beta_soma[i,j] +
@@ -475,9 +475,9 @@ mult_nimble_beta_spatial <- function(){
         ci_b[i,j] ~ dpois(lambda[i,j])
       }
     }
-    
+
     #Priori functions####
-    
+
     for(k in 1:a){
       phi[1:G,k] ~ dcar_normal(adj = w[1:L],
                                num = Nw[1:G],
@@ -485,30 +485,30 @@ mult_nimble_beta_spatial <- function(){
                                zero_mean = 1)
       tau_phi[k] ~ dgamma(a_phi,b_phi)
     }
-    
-    
+
+
     theta[1:G] ~ dcar_normal(adj = w[1:L],
                              num = Nw[1:G],
                              tau = tau_theta,
                              zero_mean = 1)
     tau_theta ~ dgamma(a_theta,b_theta)
-    
-    
+
+
     for(k in 1:a){
       alfa[k] ~ dnorm(0, var = v_alfa_kj)
     }
-    
-    
+
+
     mu ~ dnorm(0, var = v_mu)
-    
-    
+
+
     for(i in 1:G){
       for(j in 1:B){
         epsilon[i,j] ~ dnorm(0, tau = tau_e)
       }
     }
     tau_e ~ dgamma(a_epsilon, b_epsilon)
-    
+
     for(c in 1:C){
       beta[1:G, c] ~ dcar_normal(adj = w[1:L],
                                  num = Nw[1:G],
@@ -516,9 +516,9 @@ mult_nimble_beta_spatial <- function(){
                                  zero_mean = 1)
       tau_beta[c] ~ dgamma(a_beta, b_beta)
     }
-    
+
   })
-  
+
   pumpConsts <- list(
     #Model constants
     G = G, B = B,# n = n,                                         #generic
@@ -543,7 +543,7 @@ mult_nimble_beta_spatial <- function(){
     epsilon = matrix(0, pumpConsts$G, pumpConsts$B),              #error
     beta = matrix(1, pumpConsts$G, pumpConsts$C)                  #continuous
   )
-  
+
   return(list(Code = pumpCode,
               Consts = pumpConsts,
               Data = pumpData,
