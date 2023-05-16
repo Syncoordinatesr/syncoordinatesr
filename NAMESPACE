@@ -2,7 +2,9 @@
 
 export(prepare_data)
 export(syn_mcmc)
+export(syn_mcmc_nimble)
 export(syncoordinates)
 import(MfUSampler)
 import(ars)
+import(nimble)
 import(spdep)
