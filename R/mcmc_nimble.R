@@ -91,25 +91,20 @@ syn_mcmc_nimble <- function(dataset, coord, limits = c(), grid = 10,
   # NimbleCode
   if(C == FALSE){
     #No continuous variable -> C = FALSE
-    #source("NimbleCode/discrete_nimble.R")
-    Nimble <- discrete_nimble(matrix.ind.a)
+    Nimble <- discrete_nimble(G, B, nx, matrix.ind.a, nb.nimble, ni, b_epsilon)
   }else if(C == 1){
     #Only one continuous variable -> C == 1
     if(spatial_beta == FALSE){
-      #source("NimbleCode/single_nimble_beta.R")
-      Nimble <- single_nimble_beta(matrix.ind.a)
+      Nimble <- single_nimble_beta(G, B, nx, matrix.ind.a, nb.nimble, ni, z, b_epsilon)
     }else{
-      #source("NimbleCode/single_nimble_spatial_beta.R")
-      Nimble <- single_nimble_spatial_beta(matrix.ind.a)
+      Nimble <- single_nimble_spatial_beta(G, B, nx, matrix.ind.a, nb.nimble, ni, z, b_epsilon)
     }
   }else{
     #Multiple continuous variaables -> C > 1
     if(spatial_beta == FALSE){
-      #source("NimbleCode/mult_nimble_beta.R")
-      Nimble <- mult_nimble_beta(matrix.ind.a)
+      Nimble <- mult_nimble_beta(G, B, nx, matrix.ind.a, nb.nimble, ni, z, C, b_epsilon)
     }else{
-      #source("NimbleCode/mult_nimble_spatial_beta.R")
-      Nimble <- mult_nimble_spatial_beta(matrix.ind.a)
+      Nimble <- mult_nimble_spatial_beta(G, B, nx, matrix.ind.a, nb.nimble, ni, z, C, b_epsilon)
     }
   }
 
