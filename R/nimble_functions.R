@@ -1,5 +1,5 @@
 #Caso discreto####
-discrete_nimble <- function(matrix.ind.a){
+discrete_nimble <- function(G, B, nx, matrix.ind.a, nb.nimble, ni, b_epsilon){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination
     for (j in 1:B){
@@ -96,7 +96,7 @@ discrete_nimble <- function(matrix.ind.a){
 }
 
 #Caso contínuo single normal beta####
-single_nimble_beta <- function(matrix.ind.a){
+single_nimble_beta <- function(G, B, nx, matrix.ind.a, nb.nimble, ni, z, b_epsilon){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination####
     for (j in 1:B){
@@ -203,7 +203,7 @@ single_nimble_beta <- function(matrix.ind.a){
 }
 
 #Caso contínuo single spatial beta####
-single_nimble_beta_spatial <- function(matrix.ind.a){
+single_nimble_beta_spatial <- function(G, B, nx, matrix.ind.a, nb.nimble, ni, z, b_epsilon){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination
     for (j in 1:B){
@@ -311,7 +311,7 @@ single_nimble_beta_spatial <- function(matrix.ind.a){
 }
 
 #Caso contínuo multiple normal beta####
-mult_nimble_beta <- function(matrix.ind.a){
+mult_nimble_beta <- function(G, B, nx, matrix.ind.a, nb.nimble, ni, z, C, b_epsilon){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination####
     for (j in 1:B){
@@ -431,7 +431,7 @@ mult_nimble_beta <- function(matrix.ind.a){
 }
 
 #Caso contínuo multiple spatial beta####
-mult_nimble_beta_spatial <- function(matrix.ind.a){
+mult_nimble_beta_spatial <- function(G, B, nx, matrix.ind.a, nb.nimble, ni, z, C, b_epsilon){
   pumpCode <- nimbleCode({
     #Calculation of alfa_b for each combination####
     for (j in 1:B){
