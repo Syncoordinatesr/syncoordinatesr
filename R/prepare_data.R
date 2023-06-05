@@ -8,7 +8,7 @@
 #' In the input, the function receives the parameters: \code{dataset}, \code{coord}, \code{limits}, \code{grid},  \code{continuous}.
 #'
 #' @param   dataset   A data frame with all the information except the coordinates
-#' @param   coord   An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param   coord   An object with two columns indicating the longitude and latitude respectively of the elements in the dataset
 #' @param   limits An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object.
 #' @param   grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param   continuous  An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)
@@ -44,12 +44,12 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   if(is.numeric(continuous)){
 
     continuous <- sort(continuous)
+    col_continuous <- colnames(dataset[,continuous])
     vZ = length(continuous)
     Z = matrix(NA, n, vZ)
 
     for(i in 1:vZ){
-      col_Z = continuous[i]
-      Z[, i] = dataset[, col_Z]
+      Z[, i] = dataset[[col_continuous[i]]]
     }
     for(i in vZ:1){
       col_Z = continuous[i]
@@ -58,10 +58,11 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   }
 
   p = dim(dataset)[2]
+  col_dataset <- colnames(dataset)
 
   vx = list(1); vx = c(vx,2:p)
   for(i in 1:p){
-    vx[[i]] = sort(unique(dataset[,i]))
+    vx[[i]] = sort(unique(dataset[[col_dataset[i]]]))
   }
 
   nx = numeric(p)
@@ -112,8 +113,9 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   }
 
   # Vectors of latitude and longitude divided
-  xlon = findInterval(coord[,1], lonvec, all.inside = T)
-  ylat = findInterval(coord[,2], latvec, all.inside = T)
+  col_coord <- colnames(coord)
+  xlon = findInterval(coord[[col_coord[1]]], lonvec, all.inside = T)
+  ylat = findInterval(coord[[col_coord[2]]], latvec, all.inside = T)
   celula = matrix(cbind(xlon,ylat), nrow=n, ncol=2)
 
   cel = numeric(n)
