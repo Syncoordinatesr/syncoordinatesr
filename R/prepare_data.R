@@ -44,12 +44,12 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   if(is.numeric(continuous)){
 
     continuous <- sort(continuous)
+    col_continuous <- colnames(dataset[,continuous])
     vZ = length(continuous)
     Z = matrix(NA, n, vZ)
 
     for(i in 1:vZ){
-      col_Z = continuous[i]
-      Z[, i] = dataset[, col_Z]
+      Z[, i] = dataset[[col_continuous[i]]]
     }
     for(i in vZ:1){
       col_Z = continuous[i]
@@ -58,10 +58,11 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   }
 
   p = dim(dataset)[2]
+  col_dataset <- colnames(dataset)
 
   vx = list(1); vx = c(vx,2:p)
   for(i in 1:p){
-    vx[[i]] = sort(unique(dataset[,i]))
+    vx[[i]] = sort(unique(dataset[[col_dataset[i]]]))
   }
 
   nx = numeric(p)
@@ -112,8 +113,9 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   }
 
   # Vectors of latitude and longitude divided
-  xlon = findInterval(coord[,1], lonvec, all.inside = T)
-  ylat = findInterval(coord[,2], latvec, all.inside = T)
+  col_coord <- colnames(coord)
+  xlon = findInterval(coord[[col_coord[1]]], lonvec, all.inside = T)
+  ylat = findInterval(coord[[col_coord[2]]], latvec, all.inside = T)
   celula = matrix(cbind(xlon,ylat), nrow=n, ncol=2)
 
   cel = numeric(n)
