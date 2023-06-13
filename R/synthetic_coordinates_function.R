@@ -7,7 +7,7 @@
 #' And the function returns the synthetic databases containing the synthetic coordinates.
 #'
 #' @param  dataset  A data frame with all the information except the coordinates
-#' @param  coord  An object with two columns indicating the latitude and longitude respectively of the elements in the dataset
+#' @param  coord  An object with two columns indicating the longitude and latitude respectively of the elements in the dataset
 #' @param  grid  The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)
 #' @param  continuous  An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)
 #' @param  list_mcmc  Output of the mcmc function
@@ -26,7 +26,7 @@
 
 syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_mcmc, n.syn = 5){
 
-  saida = prepare_data(dataset, coord, grid, continuous)
+  saida = prepare_data(dataset, coord, limits = c(), grid, continuous)
 
   mapply(assign, names(saida), saida, MoreArgs=list(envir = globalenv()))
   mapply(assign, names(list_mcmc), list_mcmc, MoreArgs=list(envir = globalenv()))
