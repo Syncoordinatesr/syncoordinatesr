@@ -19,7 +19,7 @@ syn_mcmc(
 \arguments{
 \item{dataset}{A data frame with all the information except the coordinates}
 
-\item{coord}{An object with two columns indicating the latitude and longitude respectively of the elements in the dataset}
+\item{coord}{An object with two columns indicating the longitude and latitude respectively of the elements in the dataset}
 
 \item{limits}{An object that is a vector of the dimensions where will be create the grids passed through the sequence of xmin, xmax, ymin, ymax. The default is create by using the maximum and the minimum of the coords object.}
 
