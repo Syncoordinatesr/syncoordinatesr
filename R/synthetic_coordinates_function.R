@@ -106,7 +106,7 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
   }
 
   if(continuous != FALSE){
-    return(coord.syn, z.syn)
+    return(list(coord.syn, z.syn))
   } else{
     return(coord.syn)
   }
