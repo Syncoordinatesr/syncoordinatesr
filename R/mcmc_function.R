@@ -324,7 +324,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
         gama = gama.atual[g,j] - epsilon[g,1,j]
         sum.aux = exp(gama)
         epsilon[g,1,j] = ars(1, ef, efprima,
-                             lb=T, xlb=-100, ub=T, xub=100,
+                             lb=T, xlb=-10, ub=T, xub=10,
                              #ci_b=ci_b[j,g], sumeta=sum.aux, ## original code by Leticia - dimensions were exchanges
                              ci_b=ci_b[g,j], sumeta=sum.aux, ## code changed by Thais (Feb/22)
                              tau.e=tau.e[k-1])
