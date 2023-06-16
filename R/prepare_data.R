@@ -44,7 +44,7 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   if(is.numeric(continuous)){
 
     continuous <- sort(continuous)
-    col_continuous <- colnames(dataset[,continuous])
+    col_continuous <- colnames(dataset)[continuous]
     vZ = length(continuous)
     Z = matrix(NA, n, vZ)
 
