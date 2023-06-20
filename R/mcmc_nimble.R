@@ -151,8 +151,8 @@ syn_mcmc_nimble <- function(dataset, coord, limits = c(), grid = 10,
   }
 
   # Organizing parameters to return at the end of the function
-  sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,6)=="lambda")]; lambda <- array(,c(G,S-Burn,B))
-  for(j in 1:(S-Burn)){
+  sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,6)=="lambda")]; lambda <- array(,c(G,S-burn,B))
+  for(j in 1:(S-burn)){
     for(k in 1:B){
       for(i in 1:G){lambda[i,j,k] <- sup[j,i+G*(k-1)]}
     }
@@ -165,64 +165,64 @@ syn_mcmc_nimble <- function(dataset, coord, limits = c(), grid = 10,
 
   if(return_parameters==TRUE){
     #alfa
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,4)=="alfa")]; alfa <- array(,c(sum(nx-1),S-Burn))
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,4)=="alfa")]; alfa <- array(,c(sum(nx-1),S-burn))
     for(i in 1:(sum(nx-1))){
-      for(j in 1:(S-Burn)){alfa[i,j] <- sup[j,i]}
+      for(j in 1:(S-burn)){alfa[i,j] <- sup[j,i]}
     }
 
     #mu
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,2)=="mu")]; mu <- array(,c(S-Burn))
-    for(i in 1:(S-Burn)){mu[i] <- sup[i]}
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,2)=="mu")]; mu <- array(,c(S-burn))
+    for(i in 1:(S-burn)){mu[i] <- sup[i]}
 
     #theta
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,5)=="theta")]; theta <- array(,c(G,S-Burn))
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,5)=="theta")]; theta <- array(,c(G,S-burn))
     for(i in 1:G){
-      for(j in 1:(S-Burn)){theta[i,j] <- sup[j,i]}
+      for(j in 1:(S-burn)){theta[i,j] <- sup[j,i]}
     }
 
     #tau.theta
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,9)=="tau_theta")]; tau.theta <- array(,c(S-Burn))
-    for(i in 1:(S-Burn)){tau.theta[i] <- sup[i]}
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,9)=="tau_theta")]; tau.theta <- array(,c(S-burn))
+    for(i in 1:(S-burn)){tau.theta[i] <- sup[i]}
 
     #phi
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,3)=="phi")]; phi <- array(,c(G,S-Burn,sum(nx-1)))
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,3)=="phi")]; phi <- array(,c(G,S-burn,sum(nx-1)))
     for(k in 1:(sum(nx-1))){
-      for(j in 1:(S-Burn)){
+      for(j in 1:(S-burn)){
         for(i in 1:G){phi[i,j,k] <- sup[j,i+G*(k-1)]}
       }
     }
 
     #tau.phi
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,7)=="tau_phi")]; tau.phi <- array(,c(sum(nx-1),S-Burn))
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,7)=="tau_phi")]; tau.phi <- array(,c(sum(nx-1),S-burn))
     for(i in 1:(sum(nx-1))){
-      for(j in 1:(S-Burn)){tau.phi[i,j] <- sup[j,i]}
+      for(j in 1:(S-burn)){tau.phi[i,j] <- sup[j,i]}
     }
 
     #epsilon
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,7)=="epsilon")]; epsilon <- array(,c(G,S-Burn,B))
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,7)=="epsilon")]; epsilon <- array(,c(G,S-burn,B))
     for(k in 1:B){
-      for(j in 1:(S-Burn)){
+      for(j in 1:(S-burn)){
         for(i in 1:G){epsilon[i,j,k] <- sup[j,i+G*(k-1)]}
       }
     }
 
     #tau.e
-    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,5)=="tau_e")]; tau.e <- array(,c(S-Burn))
-    for(i in 1:(S-Burn)){tau.e[i] <- sup[i]}
+    sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,5)=="tau_e")]; tau.e <- array(,c(S-burn))
+    for(i in 1:(S-burn)){tau.e[i] <- sup[i]}
 
     if(C != FALSE){
       #beta
-      sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,4)=="beta")]; beta <- array(,c(G,S-Burn,C))
+      sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,4)=="beta")]; beta <- array(,c(G,S-burn,C))
       for(k in 1:C){
-        for(j in 1:(S-Burn)){
+        for(j in 1:(S-burn)){
           for(i in 1:G){beta[i,j,k] <- sup[j,i+G*(k-1)] }
         }
       }
 
       #tau.beta
-      sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,8)=="tau_beta")]; tau.beta <- array(,c(C, S-Burn))
+      sup <- mcmc.out$samples[,which(substr(colnames(mcmc.out$samples),1,8)=="tau_beta")]; tau.beta <- array(,c(C, S-burn))
       for(i in 1:C){
-        for(j in 1:(S-Burn)){tau.beta[i,j] <- ifelse(C>1,sup[j,i],sup[j])}
+        for(j in 1:(S-burn)){tau.beta[i,j] <- ifelse(C>1,sup[j,i],sup[j])}
       }
     }
   }
