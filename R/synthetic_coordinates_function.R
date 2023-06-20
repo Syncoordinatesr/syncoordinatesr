@@ -87,8 +87,14 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
     for(k in 1:m){
       for(j in 1:vZ){
         for(i in 1:n){
-          z.syn[i,j,k] = rnorm(1,z.pad[loc[i,k],comb[i],j],1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
+          if(is.na(z.pad[loc[i,k],comb[i],j]) == FALSE){
+            z.syn[i,j,k] = rnorm(1,z.pad[loc[i,k],comb[i],j],1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
+          }
           #z.syn[i,j,k] = rnorm(1,0,1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
+          else{
+            z.pad[loc[i,k],comb[i],j] = 0
+            z.syn[i,j,k] = rnorm(1,z.pad[loc[i,k],comb[i],j],1) * sigma.z[comb[i],j] + mean.z[comb[i],j]
+          }
         }
       }
     }
@@ -105,7 +111,7 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
 
   }
 
-  if(continuous != FALSE){
+  if(is.numeric(continuous)){
     return(list(coord.syn, z.syn))
   } else{
     return(coord.syn)
