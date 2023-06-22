@@ -35,7 +35,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
                           return_parameters = FALSE){
 
 
-  if(continuous != FALSE){
+  if(is.numeric(continuous)){
     saida = prepare_data(dataset, coord, limits, grid, continuous)
   } else{
     saida = prepare_data(dataset, coord, limits, grid)
@@ -56,7 +56,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
   mu[1] = 1
 
   # Adding beta
-  if(continuous != FALSE){
+  if(is.numeric(continuous)){
     beta = array(NA, c(G, S, vZ))
     beta[,1,] = 1
     beta.atual = beta[,1,]
@@ -78,7 +78,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
   tau.phi = matrix(1,dim(phi)[3],S)
   tau.phi[,1] = 1
 
-  if(continuous != FALSE){
+  if(is.numeric(continuous)){
     tau.beta = matrix(0, S, vZ)
     tau.beta[1,] = 1
     #tau.beta = numeric(S)
@@ -106,7 +106,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
 
   # Linear predictor
 
-  #if(continuous != FALSE){
+  #if(is.numeric(continuous)){
   #  for(k in 1:lenght(continuous)){
   #    for (j in 1:B){
   #      for (i in 1:G){
@@ -125,7 +125,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
   #  }
   #}
 
-  #gama = array(data=0, dim=c(G, ifelse(continuous != FALSE, vZ, 1), B))
+  #gama = array(data=0, dim=c(G, ifelse(is.numeric(continuous), vZ, 1), B))
   gama = array(data=0, dim=c(G, 1, B))
   for(i in b){
     if(length(ind.a[[i]])==0){
@@ -136,7 +136,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
                              apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
                              phi[,1,ind.a[[i]]]) + epsilon[,1,i]
     }
-    if(continuous != FALSE){
+    if(is.numeric(continuous)){
       gama[,1,i] = gama[,1,i] + ifelse(vZ > 1,
                                        apply(beta[,1,]*z.pad[,i,], MAR=1, FUN=sum, na.rm = TRUE),
                                        ifelse(is.na(beta[,1,]*z.pad[,i,]), 0, beta[,1,]*z.pad[,i,]))
@@ -169,7 +169,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
     gama.atual = gama + mu[k]
 
     # Estimation of alfa
-    #if(continuous != FALSE){
+    #if(is.numeric(continuous)){
 
     #  for(t in 1:dim(alfa)[1]){
     #    temp = apply(Z,MAR=2,FUN=acomb,t) #Checar se realmente o interesse é na transposta de Z
@@ -212,7 +212,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
 
     # Estimation of phi
 
-    #if(continuous != FALSE){
+    #if(is.numeric(continuous)){
     #  for(t in 1:dim(phi)[3]){
     #    temp = apply(Z,MAR=2,FUN=acomb,t)   #Z
     #    n.phi = apply(ci_b[,temp],MAR=1,FUN=sum)
@@ -251,7 +251,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
 
     #Estimation of beta
 
-    if(continuous != FALSE){
+    if(is.numeric(continuous)){
       for(i in 1:vZ){
 
         gama = gama.atual - ifelse(is.na(beta[,(k-1),i]*z.pad[,,i]), 0, beta[,(k-1),i]*z.pad[,,i])
@@ -352,7 +352,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
     sum.e = sum(epsilon^2)
     tau.e[k] = rgamma(1,ae+(G*B)/2,rate=be+sum.e/2)
 
-    if(continuous != FALSE){
+    if(is.numeric(continuous)){
       for(i in 1:vZ){
         # sum.beta = t(beta[,k,]%*%(diag(ni)-W)%*%beta[,k,])
         # tau.beta[k] = rgamma(1,abeta+n/2,rate=bbeta+sum.beta/2)

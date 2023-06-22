@@ -68,7 +68,7 @@ syncoordinates <- function(dataset, coord, grid = 10, continuous = FALSE, list_m
     }
   }
 
-  if(continuous != FALSE){
+  if(is.numeric(continuous)){
 
     sigma.z = matrix(0, B, vZ)
     mean.z = matrix(0, B, vZ)
