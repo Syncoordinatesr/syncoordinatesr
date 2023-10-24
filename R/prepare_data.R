@@ -210,3 +210,15 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
   }
 }
 
+
+library(readr)
+dados_simulacao <- read_csv("dados_originais_completo_simulações.csv")
+dados_sem_coord <-dados_simulacao[,1:5]
+coordenadas<- dados_simulacao[,c(6,7)]
+output_prepare_data <- prepare_data(
+  dataset = dados_sem_coord,
+  grid = 10,
+  continuous = 5,  # A coluna "z" é a quinta coluna em dados_sem_coord
+  limits = c(0,10,0,10),
+  coord = coordenadas
+)
