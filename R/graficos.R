@@ -32,7 +32,7 @@ library(readr)
 
 #carregamento do banco de dados para simulação
 dados_simulacao <- read_csv("dados_originais_completo_simulações.csv")
-dados_sem_coord <-dados_simulacao[,1:4]
+dados_sem_coord <-dados_simulacao[,2:5]
 coordenadas <- dados_simulacao[,c(6,7)]
 
 #carregamento utills_functions
@@ -41,25 +41,21 @@ coordenadas <- dados_simulacao[,c(6,7)]
 prepara_dados <- prepare_data(
   dataset = dados_sem_coord,
   grid = 10,
-  continuous = F,
+  continuous = 4,
   limits = c(0, 10, 0, 10),
   coord = coordenadas
 )
 
 
+dados_sem_coord<- as.data.frame(dados_sem_coord)
+coordenadas<- as.data.frame(coordenadas)
+
 # carregamento mcmc_funcion.R
 mcmc_dados = syn_mcmc(dados_sem_coord, coordenadas, limits = c(0,10,0,10),
                       grid = 10, S = 1250, burn = 250,
-                      continuous = F,
+                      continuous = 4,
                       spatial_beta = FALSE,
                       return_parameters = TRUE)
-
-
-mcmc_dados = syn_mcmc(dados_sem_coord, coordenadas, limits = c(0,10,0,10),
-                      grid = 10, S = 10000, burn = 1000,
-                      continuous = F,
-                      spatial_beta = FALSE,
-                      return_parameters = T)
 
 ## Graficos
 
@@ -82,7 +78,8 @@ epsilon = mcmc_dados[["epsilon"]]
 
 #traceplots dos parâmetros do modelo
 
-plot_traceplots <- function(S, alfa, mu, theta, phi, epsilon) {
+
+plot_traceplots <- function(S, alfa, mu,thau.phi, tau.theta, tau.e ) {
 
   num_plots <- 0  # Variável para contar o número de gráficos
   plots <- list()  # Lista para armazenar os gráficos
@@ -137,27 +134,33 @@ plot_traceplots <- function(S, alfa, mu, theta, phi, epsilon) {
 }
 
 
+
 #plot de lambda
 plot_lambda <- function(lambda, n_lambda, S_inicio, S) {
   num_combinacoes <- nrow(lambda)
-  par_list <- list()
+  plot_graphs <- list()
 
   for (i in 1:num_combinacoes) {
-    par_list[[i]] <- plot(lambda[n_lambda, S_inicio:S, i], type = "l", xlab = "Iterações", ylab = paste("Lambda (", n_lambda, ") combinação ", i))
+    plot_graphs[[i]] <- plot(lambda[n_lambda, S_inicio:S, i], type = "l", xlab = "Iterações", ylab = paste("Lambda (", n_lambda, ") combinação ", i))
   }
 
-  return(par_list)
+  return(plot_graphs)
 }
 
 # Plot para avaliação do modelo
 # para plotar gráficos de intensidade para diferentes combinações
 plot_media_lambda <- function(media_lambda, grid, dados, comb) {
   corDegrade <- colorRampPalette(c("light yellow","red"))
-  num_combinacoes <- ncol(media_lambda)
-  num_rows <- ceiling(num_combinacoes / 3)  # 3 gráficos por linha
+  num_combinacoes <- length(media_lambda) #não sei qual o formato do media_lambda
+  num_rows <- ceiling(num_combinacoes / 3)  # 3 gráficos por linha- celling arredonda para cima
   num_cols <- 3  # 3 gráficos por coluna
 
   par(mfrow = c(num_rows, num_cols))
+
+
+  #nao ficou claro de onde tirou o lonvec e latvec (na duvida, vou classsificar como vetor)
+  lonvec = dados$lon
+  lacvec = dados$lat
 
   for (i in 1:num_combinacoes) {
     image(lonvec, latvec, matrix(media_lambda[, i], nrow = grid, ncol = grid), col = corDegrade(10),

@@ -28,11 +28,10 @@
 #' @import ars MfUSampler
 #'
 #' @export
-
 syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
-                          S = 5000, burn = 1000,
-                          continuous = FALSE, spatial_beta = FALSE,
-                          return_parameters = FALSE){
+                     S = 5000, burn = 1000,
+                     continuous = FALSE, spatial_beta = FALSE,
+                     return_parameters = FALSE){
 
 
   if(is.numeric(continuous)){
@@ -131,10 +130,10 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
     if(length(ind.a[[i]])==0){
       gama[,1,i] = log(n) + mu[1] + theta[,1] + epsilon[,1,i]
     } else{
-        gama[,1,i] = log(n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
-          theta[,1] + ifelse(length(ind.a[[i]])>1,
-                             apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
-                             phi[,1,ind.a[[i]]]) + epsilon[,1,i]
+      gama[,1,i] = log(n) + mu[1] + sum(alfa[ind.a[[i]],1]) +
+        theta[,1] + ifelse(length(ind.a[[i]])>1,
+                           apply(phi[,1,ind.a[[i]]],MAR=1,FUN=sum),
+                           phi[,1,ind.a[[i]]]) + epsilon[,1,i]
     }
     if(is.numeric(continuous)){
       gama[,1,i] = gama[,1,i] + ifelse(vZ > 1,
@@ -181,15 +180,15 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
     #  }
     #} else{
     for(t in 1:dim(alfa)[1]){
-        # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
-        ## it's accessing the wrong dimension of ci_b, it should be:
-        n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
-        gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
-        sumeta.a = sum(exp(gama))
-        alfa[t,k] <- ars(1, muf, mufprima,
-                         lb=T, xlb=-100, ub=T, xub=100,
-                         sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
-        gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
+      # n.alfa = sum(ci_b[sub.a[[t]],]) # original code by Leticia
+      ## it's accessing the wrong dimension of ci_b, it should be:
+      n.alfa = sum(ci_b[ , sub.a[[t]]]) # changed by Thais - Feb/22
+      gama = gama.atual[,sub.a[[t]]] - alfa[t,(k-1)]
+      sumeta.a = sum(exp(gama))
+      alfa[t,k] <- ars(1, muf, mufprima,
+                       lb=T, xlb=-100, ub=T, xub=100,
+                       sumeta=sumeta.a, vmu=valfa, ci_b=n.alfa)
+      gama.atual[,sub.a[[t]]] = gama + alfa[t,k]
     }
     #}
 
@@ -222,7 +221,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
     #    bar = W[g,]%*%phi.atual[,t]/ni[g]
     #    phi.atual[g,t] = ars(1,thetaf,thetafprima,lb=T,ns=1000,xlb=-100,ub=T,xub=100,ci_b=n.phi[g],sumeta=sum.phi,ni=ni[g],tau.f=tau.phi[t,(k-1)],bar.f=bar)
     #  }
-        ## Sum equal to zero
+    ## Sum equal to zero
     #   phi[,k,t] = phi.atual[,t] - sum(phi.atual[,t])/G
     #   gama.atual[,temp] = gama + phi[,k,t]
     #  }
@@ -282,7 +281,7 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
 
             #Antes beta[g,(k-1),i] = inv.logit(u)
             beta[g,k,i] = inv.logit(u)
-         }
+          }
         } else{
           #Checar como fica a situação quando o usuário escolher determinados betas
           for(g in 1:G){
@@ -335,8 +334,8 @@ syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
     # compute the up-to-date mean of lambda, in case of returning just the mean
     if(k > burn){
       media.lambda = (media.lambda*((k-burn-1)/(k-burn))) +
-                      #(exp(eta.atual)/(k-burn)) # original code by Leticia ??
-                       (exp(gama.atual)/(k-burn)) # changed by Thais (Feb/2022)
+        #(exp(eta.atual)/(k-burn)) # original code by Leticia ??
+        (exp(gama.atual)/(k-burn)) # changed by Thais (Feb/2022)
     }
 
     sum.theta = t(theta[,k])%*%(diag(ni)-W)%*%(theta[,k])

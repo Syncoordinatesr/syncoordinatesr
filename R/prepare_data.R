@@ -185,9 +185,9 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
     for(d in 1:vZ){
       for(i in 1:G){
         for(j in 1:B){
-            z.bar[i, j, d] = ifelse(sum(cel == i & comb == j) == 0,
-                                    NA,
-                                    mean(Z[cel == i & comb == j, d], na.rm = TRUE))
+          z.bar[i, j, d] = ifelse(sum(cel == i & comb == j) == 0,
+                                  NA,
+                                  mean(Z[cel == i & comb == j, d], na.rm = TRUE))
         }
       }
     }
@@ -209,16 +209,3 @@ prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = F
                 ind.a=ind.a, sub.a=sub.a, W=W))
   }
 }
-
-
-library(readr)
-dados_simulacao <- read_csv("dados_originais_completo_simulações.csv")
-dados_sem_coord <-dados_simulacao[,1:5]
-coordenadas<- dados_simulacao[,c(6,7)]
-output_prepare_data <- prepare_data(
-  dataset = dados_sem_coord,
-  grid = 10,
-  continuous = 5,  # A coluna "z" é a quinta coluna em dados_sem_coord
-  limits = c(0,10,0,10),
-  coord = coordenadas
-)
