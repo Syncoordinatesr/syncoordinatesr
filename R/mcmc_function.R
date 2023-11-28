@@ -28,6 +28,8 @@
 #' @import ars MfUSampler
 #'
 #' @export
+
+
 syn_mcmc <- function(dataset, coord, limits = c(), grid = 10,
                      S = 5000, burn = 1000,
                      continuous = FALSE, spatial_beta = FALSE,

@@ -22,6 +22,11 @@
 #' @import spdep
 #'
 #' @export
+#'
+#'
+#'
+#'
+#'
 
 prepare_data <- function(dataset, coord, limits = c(), grid = 10, continuous = FALSE){
 

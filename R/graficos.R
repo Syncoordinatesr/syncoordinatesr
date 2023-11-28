@@ -1,174 +1,227 @@
 
-
-#carregamento dos pacotes
-library(rgdal)
-library(ggplot2)
-library(rgeos)
-library(plyr)
-library(dplyr)
-library(scales)
-library(epiDisplay)
-library(patchwork)
-library(sf)
-library(FNN)
-library(ars)
-library(fields)
-library(mvtnorm)
-library(spdep)
-library(spBayes)
-library(class)
-library(HDInterval)
-library(coda)
-library(MfUSampler)
-#install.packages("devtools")
-library(devtools)
-#devtools::install_github("leogalhardo/syncoordinatesr")
-library(syncoordinatesr)
-library(yarrr)
-library(ggpubr)
-library(gridExtra)
-library(readr)
+#' @title  An auxiliary function to generate traceplot graphs based on MCMC results for further analysis.
+#'
+#' @name  graphs_traceplots
+#'
+#' @param resultados A list containing MCMC results, including elements like "S", "burn", "alfa", "mu", "tau.theta", "tau.phi", and "tau.e".
+#' @param dados A list containing dataset information.
+#' @param plot_color A character indicating the color for the plot lines.
+#' @param add_trendline A logical indicating whether to add a trendline to the plots.
+#' @param save_file A logical indicating whether to save the generated plots to files.
+#'
+#' @return It generates traceplot graphs based on the provided MCMC results and saves them if specified.
+#'
+#' @examples
+#' # Example usage:
+#' # graphs_traceplots(resultados, dados, plot_color = "blue", add_trendline = TRUE, save_file = TRUE)
+#'
+#' @references
+#' NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.
+#' Disponível em: \url:{http//est.ufmg.br/portal/arquivos/mestrado/dissertacoes/dissertacao_Leticia_Silva_Nunes.pdf}. Acesso em: 2 mar. 2022.
+#'
+#' @export
+#'
 
 
-#carregamento do banco de dados para simulação
-dados_simulacao <- read_csv("dados_originais_completo_simulações.csv")
-dados_sem_coord <-dados_simulacao[,2:5]
-coordenadas <- dados_simulacao[,c(6,7)]
+# Traceplots Function -----------------------------------------------------
+graphs_traceplots  <- function(resultados, dados, plot_color, add_trendline, save_file) {
 
-#carregamento utills_functions
+      num <- length(resultados)
+      if (
+        !is.list(resultados) ||  # Ensures resultados as a list
+        !is.list(dados) ||  # Ensures dados as a list
+        num < 4||
+        !is.logical(save_file) || # Ensures save_file is a logical argument
+        !is.character(plot_color)||   # Ensures plot_color is a character
+        !is.logical(add_trendline)  # Ensures add_trendline is a logical argument
 
-# Chame a função prepare_data
-prepara_dados <- prepare_data(
-  dataset = dados_sem_coord,
-  grid = 10,
-  continuous = 4,
-  limits = c(0, 10, 0, 10),
-  coord = coordenadas
-)
+      ) {
+        stop("Arguments are not in the correct format. Please ensure that results and data are provided as lists,
+          save file and add_trendline are specified as T or F, and check that plot_color is a character.")
+      }
+
+      else{
+
+        # Extracting specific elements from the 'resultados' list
+        S = resultados[["S"]]
+        burn = resultados[["burn"]]
+        alfa = resultados[["alfa"]]
+        mu = resultados[["mu"]]
+        tau.theta = resultados[["tau.theta"]]
+        tau.phi = resultados[["tau.phi"]]
+        tau.e = resultados[["tau.e"]]
+
+        # Calculating the number of rows in 'alfa' and 'tau.phi' matrices
+        num_alfa <- nrow(alfa)
+        num_tau_phi <- nrow(tau.phi)
+
+        # Calculating the total number of combinations (rows in 'alfa' and 'tau.phi' matrices plus 3)
+        num_combinacoes <- num_alfa + num_tau_phi + 3
+
+        # Calculating the number of rows and columns for the plot layout
+        nrows <- ceiling(sqrt(num_combinacoes))
+        ncols <- ceiling(num_combinacoes / nrows)
+
+        par(mfrow = c(nrows, ncols),oma = c(1,1,1,1),mar = c(1,1,2,1))
+
+        if (add_trendline == T) { # Plot graphs with central tendency line
+
+          # Mu
+          plot(mu[1:S], type = "l", xlab = "", ylab = "", main= "(Intercept)",col = plot_color,yaxt = "n",xaxt = "n")
+          abline(lm(mu[1:S] ~ seq_along(mu[1:S])), col = "black",lty = 2)
+
+          # Tau.theta
+          plot(tau.theta[1:S], type = "l", xlab = "", ylab = "", main = "Tau.theta",col = plot_color,yaxt = "n",xaxt = "n")
+          abline(lm(tau.theta[1:S] ~ seq_along(tau.theta[1:S])), col = "black",lty = 2)
+
+          # Tau.e
+          plot(tau.e[1:S], type = "l", xlab = "", ylab = "", main = "Tau.e",col = plot_color,yaxt = "n",xaxt = "n")
+          abline(lm(tau.e[1:S] ~ seq_along(tau.e[1:S])), col = "black",lty = 2)
 
 
-dados_sem_coord<- as.data.frame(dados_sem_coord)
-coordenadas<- as.data.frame(coordenadas)
-
-# carregamento mcmc_funcion.R
-mcmc_dados = syn_mcmc(dados_sem_coord, coordenadas, limits = c(0,10,0,10),
-                      grid = 10, S = 1250, burn = 250,
-                      continuous = 4,
-                      spatial_beta = FALSE,
-                      return_parameters = TRUE)
-
-## Graficos
-
-grid = 10
-S = mcmc_dados[["S"]]
-burn = mcmc_dados[["burn"]]
-lambda = mcmc_dados[["lambda"]]
-media.lambda = mcmc_dados[["media.lambda"]]
-alfa = mcmc_dados[["alfa"]]
-mu = mcmc_dados[["mu"]]
-theta = mcmc_dados[["theta"]]
-# tau.theta = mcmc_dados[["tau.theta"]]
-phi = mcmc_dados[["phi"]]
-# tau.phi = mcmc_dados[["tau.phi"]]
-epsilon = mcmc_dados[["epsilon"]]
-# tau.e = mcmc_dados[["tau.e"]]
+          # Alfa
+          for (i in 1:num_alfa) {
+            plot(alfa[i, 1:S], type = "l", xlab = "", ylab = "", main= paste("Alfa.", i),col = plot_color,yaxt = "n",xaxt = "n")
+            abline(lm(alfa[i, 1:S] ~ seq_along(alfa[i, 1:S])), col = "black",lty = 2)
 
 
-#Gráficos de convergência
+          }
 
-#traceplots dos parâmetros do modelo
+          # Tau.phi
+          for (i in 1:num_tau_phi) {
+            plot(tau.phi[i, 1:S], type = "l", xlab = "", ylab = "", main= paste("Tau.phi.", i),col = plot_color,yaxt = "n",xaxt = "n")
+            abline(lm(tau.phi[i, 1:S] ~ seq_along(tau.phi[i, 1:S])), col = "black",lty = 2)
+
+          }
+
+          par(mfrow = c(1, 1))
+
+        }
+
+      else{
+
+        # Mu
+        plot(mu[1:S], type = "l", xlab = "", ylab = "", main= "(Intercept)",col = plot_color,yaxt = "n",xaxt = "n")
+
+        # Tau.theta
+        plot(tau.theta[1:S], type = "l", xlab = "", ylab = "", main = "Tau.theta",col = plot_color,yaxt = "n",xaxt = "n")
+
+        # Tau.e
+        plot(tau.e[1:S], type = "l", xlab = "", ylab = "", main = "Tau.e",col = plot_color,yaxt = "n",xaxt = "n")
+
+        # Alfa
+        for (i in 1:num_alfa) {
+          plot(alfa[i, 1:S], type = "l", xlab = "", ylab = "", main= paste("Alfa.", i),col = plot_color,yaxt = "n",xaxt = "n")
+
+        }
+
+        # Tau.phi
+        for (i in 1:num_tau_phi) {
+          plot(tau.phi[i, 1:S], type = "l", xlab = "", ylab = "", main= paste("Tau.phi.", i),col = plot_color,yaxt = "n",xaxt = "n")
+        }
+
+        par(mfrow = c(1, 1))
+      }
+
+      }
 
 
-plot_traceplots <- function(S, alfa, mu,thau.phi, tau.theta, tau.e ) {
+      if (save_file == T) {
 
-  num_plots <- 0  # Variável para contar o número de gráficos
-  plots <- list()  # Lista para armazenar os gráficos
+        # Creating a folder to store the traceplot graphs
+        graphs_traceplots <- "graphs/traceplots"
+        if (!file.exists(graphs_traceplots)) {
+          dir.create(graphs_traceplots, recursive = TRUE)
+        }
 
-  if (!is.null(mu)) {
-    num_plots <- num_plots + 1
-    plots[[num_plots]]<-plot(mu[1:S], type = "l", xlab = "Iterações", ylab = "mu")
-  }
+        if (add_trendline == T) {
 
-  if (!is.null(alfa)) {
-    num_alfa <- nrow(alfa)
-    for (i in 1:num_alfa) {
-      num_plots <- num_plots + 1
-      plots[[num_plots]]<-plot(alfa[i, 1:S], type = "l", xlab = "Iterações", ylab = paste("alfa (", i, ")"))
-    }
-  }
+          #Mu
+          pdf_mu <- file.path(graphs_traceplots, "plot_mu.pdf")
+          pdf(file = pdf_mu)
+          plot(mu[1:S], type = "l", xlab = "Iterations", ylab = "mu", col= plot_color)
+          abline(lm(mu[1:S] ~ seq_along(mu[1:S])), col = "black",lty = 2)
+          dev.off()
 
-  if (!is.null(theta)) {
-    num_theta <- nrow(theta)
-    for (i in 1:num_theta) {
-      num_plots <- num_plots + 1
-      plots[[num_plots]]<-plot(theta[i, 1:S], type = "l", xlab = "Iterações", ylab = paste("theta (", i, ")")
-    }
-  }
 
-  if (!is.null(phi)) {
-    num_phi <- dim(phi)[]#?
-    for (i in 1:num_phi) {
-      num_plots <- num_plots + 1
-      plots[[num_plots]]<-plots[[num_plots]]<-plot(phi[1:S, i], type = "l", xlab = "Iterações", ylab = paste("phi (", i, ")")
-    }
-  }
+          #Tau.theta
+          pdf_tau_theta <- file.path(graphs_traceplots, "plot_tau_theta.pdf")
+          pdf(file = pdf_tau_theta)
+          plot(tau.theta[1:S], type = "l", xlab = "Iterations", ylab = "tau.theta", col= plot_color)
+          abline(lm(tau.theta[1:S] ~ seq_along(tau.theta[1:S])), col = "black",lty = 2)
+          dev.off()
 
-  if (!is.null(epsilon)) {
-    num_epsilon <- dim(epsilon)[]#?
-    for (i in 1:num_epsilon) {
-      plots[[num_plots]]<-plot(epsilon[1:S, i], type = "l", xlab = "Iterações", ylab = paste("epsilon (", i, ")")
-    }
-  }
+          #Tau.e
+          pdf_tau_e <- file.path(graphs_traceplots, "plot_tau_e.pdf")
+          pdf(file = pdf_tau_e)
+          plot(tau.e[1:S], type = "l", xlab = "Iterations", ylab = "tau.e",col= plot_color)
+          abline(lm(tau.e[1:S] ~ seq_along(tau.e[1:S])), col = "black",lty = 2)
+          dev.off()
 
-  # num_cols <- 3 #numero de colunas
-  # num_rows <- ceiling(num_plots / num_cols) #numeros de linhas necessárias
-  #
-  # par(mfrow = c(num_rows, num_cols))
+          #Alfa
+          num_alfa <- nrow(alfa)
+          for (i in 1:num_alfa) {
+            pdf_alfa <- file.path(graphs_traceplots, paste0("plot_alfa", i, ".pdf"))
+            pdf(file = pdf_alfa)
+            plot(alfa[i, 1:S], type = "l", xlab = "Iterations", ylab = paste("alfa (", i, ")"), col= plot_color)
+            abline(lm(alfa[i, 1:S] ~ seq_along(alfa[i, 1:S])), col = "black",lty = 2)
+            dev.off()
+        }
 
-  # Plote os gráficos
-  for (i in 1:num_plots) {
-    plot(plots[[i]])
-  }
+          #Tau.phi
+          num_tau_phi <- nrow(tau.phi)
+          for (i in 1:num_tau_phi) {
+            pdf_tau_phi <- file.path(graphs_traceplots, paste0("plot_tau_phi", i, ".pdf"))
+            pdf(file = pdf_tau_phi)
+            plot(tau.phi[i,1:S], type = "l", xlab = "Iterations", ylab = paste("tau.phi (", i, ")"), col= plot_color)
+            abline(lm(tau.phi[i, 1:S] ~ seq_along(tau.phi[i, 1:S])), col = "black",lty = 2)
+            dev.off()
 
-  return(plots)  # Retorna a lista de gráficos
+        }
+        }
+          else{
+
+          #Mu
+          pdf_mu <- file.path(graphs_traceplots, "plot_mu.pdf")
+          pdf(file = pdf_mu)
+          plot(mu[1:S], type = "l", xlab = "Iterations", ylab = "mu", col= plot_color)
+          dev.off()
+
+
+          #Tau.theta
+          pdf_tau_theta <- file.path(graphs_traceplots, "plot_tau_theta.pdf")
+          pdf(file = pdf_tau_theta)
+          plot(tau.theta[1:S], type = "l", xlab = "Iterations", ylab = "tau.theta", col= plot_color)
+          dev.off()
+
+          #Tau.e
+          pdf_tau_e <- file.path(graphs_traceplots, "plot_tau_e.pdf")
+          pdf(file = pdf_tau_e)
+          plot(tau.e[1:S], type = "l", xlab = "Iterations", ylab = "tau.e",col= plot_color)
+          dev.off()
+
+          #Alfa
+          num_alfa <- nrow(alfa)
+          for (i in 1:num_alfa) {
+            pdf_alfa <- file.path(graphs_traceplots, paste0("plot_alfa", i, ".pdf"))
+            pdf(file = pdf_alfa)
+            plot(alfa[i, 1:S], type = "l", xlab = "Iterations", ylab = paste("alfa (", i, ")"), col= plot_color)
+            dev.off()
+          }
+
+          #Tau.phi
+          num_tau_phi <- nrow(tau.phi)
+          for (i in 1:num_tau_phi) {
+            pdf_tau_phi <- file.path(graphs_traceplots, paste0("plot_tau_phi", i, ".pdf"))
+            pdf(file = pdf_tau_phi)
+            plot(tau.phi[i,1:S], type = "l", xlab = "Iterations", ylab = paste("tau.phi (", i, ")"), col= plot_color)
+            dev.off()
+
+          }
+        }
+
+      }
+
 }
 
-
-
-#plot de lambda
-plot_lambda <- function(lambda, n_lambda, S_inicio, S) {
-  num_combinacoes <- nrow(lambda)
-  plot_graphs <- list()
-
-  for (i in 1:num_combinacoes) {
-    plot_graphs[[i]] <- plot(lambda[n_lambda, S_inicio:S, i], type = "l", xlab = "Iterações", ylab = paste("Lambda (", n_lambda, ") combinação ", i))
-  }
-
-  return(plot_graphs)
-}
-
-# Plot para avaliação do modelo
-# para plotar gráficos de intensidade para diferentes combinações
-plot_media_lambda <- function(media_lambda, grid, dados, comb) {
-  corDegrade <- colorRampPalette(c("light yellow","red"))
-  num_combinacoes <- length(media_lambda) #não sei qual o formato do media_lambda
-  num_rows <- ceiling(num_combinacoes / 3)  # 3 gráficos por linha- celling arredonda para cima
-  num_cols <- 3  # 3 gráficos por coluna
-
-  par(mfrow = c(num_rows, num_cols))
-
-
-  #nao ficou claro de onde tirou o lonvec e latvec (na duvida, vou classsificar como vetor)
-  lonvec = dados$lon
-  lacvec = dados$lat
-
-  for (i in 1:num_combinacoes) {
-    image(lonvec, latvec, matrix(media_lambda[, i], nrow = grid, ncol = grid), col = corDegrade(10),
-          main = paste("Intensidade", colnames(media_lambda)[i]))
-    points(dados$lon[comb == i], dados$lat[comb == i])
-    rect(4, 4, 6, 5, border = "black")
-  }
-
-  dev.off()
-}
 
