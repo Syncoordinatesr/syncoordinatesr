@@ -81,7 +81,7 @@ media_lambda <- function(results, data, grid, coord, standard_scale, save_file) 
 
       if (standard_scale == T) {
         # Loops through each combination to create plots
-        image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
+        fields::image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
                    col = corDegrade(10), main = paste("Lambda ", i),
                    xlab = "", ylab = "", yaxt = "n", xaxt = "n", zlim = c(zlim_min, zlim_max))
         points(coord$lon[comb == i], coord$lat[comb == i])
@@ -89,7 +89,7 @@ media_lambda <- function(results, data, grid, coord, standard_scale, save_file) 
       }
 
       else{
-        image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
+        fields::image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
                    col = corDegrade(10), main = paste("Lambda ", i),
                    xlab = "", ylab = "",yaxt = "n",xaxt = "n")
         points(coord$lon[comb == i], coord$lat[comb == i])
@@ -105,7 +105,7 @@ media_lambda <- function(results, data, grid, coord, standard_scale, save_file) 
         if (standard_scale == T) {
           pdf_media_lambda <- file.path(graphs_media_lambda, paste0("plot_media_lambda", i, ".pdf"))
           pdf(file = pdf_media_lambda)
-          image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
+          fields::image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
                      col = corDegrade(10), main = paste("Lambda ", i),
                      xlab = "", ylab = "", yaxt = "n", xaxt = "n", zlim = c(zlim_min, zlim_max))
           points(coord$lon[comb == i], coord$lat[comb == i])
@@ -116,7 +116,7 @@ media_lambda <- function(results, data, grid, coord, standard_scale, save_file) 
         else{
           pdf_media_lambda <- file.path(graphs_media_lambda, paste0("plot_media_lambda", i, ".pdf"))
           pdf(file = pdf_media_lambda)
-          image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
+          fields::image.plot(lonvec, latvec, matrix(media.lambda[, i], nrow = grid, ncol = grid),
                      col = corDegrade(10), main = paste("Lambda ", i),
                      xlab = "", ylab = "")
           points(coord$lon[comb == i], coord$lat[comb == i])
