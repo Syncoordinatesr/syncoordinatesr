@@ -7,8 +7,11 @@
 syncoordinates(
   dataset,
   coord,
+  limits = c(),
   grid = 10,
   continuous = FALSE,
+  restricted_area = FALSE,
+  coord_restricted_area,
   list_mcmc,
   n.syn = 5
 )
