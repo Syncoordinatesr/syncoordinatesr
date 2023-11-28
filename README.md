@@ -11,7 +11,7 @@ be done via github. To do this you must have already installed the package **dev
 so you can use the function *install_github* as exhibited below:
 
 ```R
-devtools::install_github("leogalhardo/syncoordinatesr")
+devtools::install_github("Syncoordinatesr/syncoordinatesr")
 ```
 
 ## Error in installation
