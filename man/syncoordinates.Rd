@@ -21,9 +21,15 @@ syncoordinates(
 
 \item{coord}{An object with two columns indicating the longitude and latitude respectively of the elements in the dataset}
 
+\item{limits}{Object that is a vector of the dimensions where the grid cells will be created, specified by the sequence xmin, xmax, ymin, ymax. The default is to use the maximum and minimum of the coords object.}
+
 \item{grid}{The grid represents the quantities of divisions that will be made in the location. Bigger the grid, closer the synthetic coordinates are to the real coordinates. With a default result of (grid = 10)}
 
 \item{continuous}{An object that indicates which columns in the dataset correspond to continuous variables. The default is FALSE which means that there is none continuous variable. (Still not adapted for cases with more than one continuous variable)}
+
+\item{restricted_area}{Logical argument indicating whether there are restricted areas where synthetic geographic coordinates should not be generated. The default is FALSE, meaning there are no restricted areas.}
+
+\item{coord_restricted_area}{Object with two columns indicating the longitude and latitude of the points that form the restricted areas. By default, for the object to be considered a polygon, the first longitude and latitude points must be identical to the last longitude and latitude points.}
 
 \item{list_mcmc}{Output of the mcmc function}
 
@@ -38,8 +44,7 @@ Function \code{syncoordinates} receives the database, the parameter lambda and t
 And the function returns the synthetic databases containing the synthetic coordinates.
 }
 \examples{
-  syncoordinates(dataset = my_database, lambda = lambda_from_mcmc, n.syn = 3)
-
+   syncoordinates(dataset = my_database , coord = my_coords, grid = 10, continuous = FALSE, restricted_area = FALSE, list_mcmc = my_mcmc, n.syn = 5)
 }
 \references{
 NUNES, Letícia. Métodos de Simulação de Dados Geográficos Sintéticos Para Bases Confidenciais. *Dissertação de Mestrado*, [s. l.], 2018.

@@ -2,6 +2,7 @@
 % Please edit documentation in R/syncoordinatesr.R
 \docType{package}
 \name{syncoordinatesr}
+\alias{syncoordinatesr-package}
 \alias{syncoordinatesr}
 \title{Synthetic Data Generator}
 \description{

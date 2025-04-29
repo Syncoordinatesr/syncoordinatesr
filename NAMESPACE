@@ -2,6 +2,8 @@
 
 export(graphs_traceplots)
 export(media_lambda)
+export(plot_origin)
+export(plot_syn)
 export(prepare_data)
 export(syn_mcmc)
 export(syn_mcmc_nimble)
